@@ -142,6 +142,7 @@ aside{display:none}
 .mlist button{display:flex;align-items:center;gap:10px;text-align:left;min-height:48px;padding:0 10px;border-radius:10px;font-weight:600}
 .mlist button:hover{background:var(--panel2)}
 .mlist button small{color:var(--mute);font-weight:400;margin-left:auto}
+.mlist button:disabled{opacity:.45;cursor:not-allowed}
 .mlist .sel{color:var(--ok)}
 .row2{display:flex;gap:8px;margin:8px 0 14px}
 
@@ -558,7 +559,7 @@ async function api(path, opt = {}, retry = true){
 function handleErr(e){
   console.warn(e);
   const m = (e && e.message) || 'Something went wrong';
-  if (e && e.status === 404 && /device|active/i.test(m + (e.reason || ''))) { toast('Speaker not found. Open the Spotify app on your phone (or pick "This browser") and try again.', 5000); openDevices(); }
+  if (e && e.status === 404 && /device|active/i.test(m + (e.reason || ''))) { if (MOBILE) { S.dev = null; LS.del('pc.dev'); renderTop(); } toast(MOBILE ? 'Spotify on this phone is asleep. Tap Open Spotify, play any song for a second, then come back.' : 'Speaker not found. Open the Spotify app on your phone (or pick "This browser") and try again.', 5000); openDevices(); }
   else if (e && e.status === 403 && /premium/i.test(m + (e.reason || ''))) toast('Spotify Premium is needed for playback.');
   else if (e && e.status === 403) toast('Spotify refused that: ' + m, 5000);
   else if (e && e.noDevice) {}
@@ -789,27 +790,44 @@ function qClear(){ S.list.splice(S.idx + 1); S.qn = 0; saveQ(); renderSide(); if
 async function jumpTo(i, startAt){ if (i === S.idx && startAt == null) return; if (i > S.idx) S.qn = Math.max(0, S.qn - (i - S.idx)); await playIdx(i, startAt); }
 
 /* ---------- devices ---------- */
+const SPOTIFY_APP = /Android/i.test(navigator.userAgent) ? 'intent://open#Intent;scheme=spotify;package=com.spotify.music;end' : 'spotify:';
+let devTimer = null, awaitSpotify = false;
 async function openDevices(){
   openSheet(`<div class="sh"><h3>Where should the music play?</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
     <div class="mlist" id="devList"><p class="hint">Looking for speakers…</p></div>
-    <p class="hint">Don't see your phone? Open the Spotify app on it, play any song for a second, then tap Refresh.${MOBILE ? '' : ' "This browser" plays the music right here on this computer.'}</p>
-    <div class="row2"><button class="btn" data-d="refresh">Refresh</button></div>`, 'dev');
+    ${MOBILE ? `<div class="note" style="margin:10px 0"><b style="color:var(--ink)">Don't see this phone?</b> Spotify only lists a phone while its app is awake. Tap <b style="color:var(--ink)">Open Spotify</b>, play any song for a second, then come back here. JUMP will pick it up by itself.</div>
+    <div class="row2"><a class="pri" href="${SPOTIFY_APP}" data-d="openapp" style="text-decoration:none">Open Spotify</a><button class="btn" data-d="refresh">Refresh</button></div>
+    <p class="hint">Still missing? In the Spotify app, go to Settings and make sure <b>Spotify Connect control</b> (or "Allow other devices to control playback") is on. In phone Settings → Apps → Spotify → Battery, choose <b>Unrestricted</b>.</p>`
+    : `<p class="hint">Don't see your phone? Open the Spotify app on it, play any song for a second, then tap Refresh. "This browser" plays the music right here on this computer.</p>
+    <div class="row2"><button class="btn" data-d="refresh">Refresh</button></div>`}`, 'dev');
   await listDevices();
+  clearInterval(devTimer);
+  devTimer = setInterval(() => { if (S.sheet !== 'dev') { clearInterval(devTimer); return; } listDevices(true); }, 3000);
 }
-async function listDevices(){
+async function fetchDevices(){
   let ds = [];
-  try { ds = ((await api('/me/player/devices')) || {}).devices || []; } catch (e) { handleErr(e); }
+  try { ds = ((await api('/me/player/devices')) || {}).devices || []; } catch (e) { if (e.status !== 404) console.warn(e); }
+  if (!ds.length || !ds.some(d => d.is_active)) {
+    try { const j = await api('/me/player'); if (j && j.device && j.device.id && !ds.some(d => d.id === j.device.id)) ds.push(Object.assign({}, j.device, { is_active: true })); } catch {}
+  }
   if (S.sdkId && !ds.some(d => d.id === S.sdkId)) ds.unshift({ id: S.sdkId, name: 'This browser', type: 'Computer', supports_volume: true });
+  return ds.filter(d => d && d.id);
+}
+async function listDevices(quiet){
+  const ds = await fetchDevices();
   S.devs = ds;
+  if (MOBILE && (!S.dev || !ds.some(d => d.id === S.dev))) { const ph = ds.find(x => /smartphone/i.test(x.type)) || ds.find(x => x.is_active); if (ph) return pickDevice(ph.id); }
   const el = $('#devList'); if (!el) return;
-  el.innerHTML = ds.length ? ds.map(d => `<button data-d="${esc(d.id)}" class="${d.id === S.dev ? 'sel' : ''}">${IC.spk.replace('<svg', '<svg width="20" height="20"')}${esc(d.id === S.sdkId ? 'This browser' : d.name)}<small>${esc(d.type || '')}${d.is_active ? ' · active' : ''}${d.id === S.dev ? ' · selected' : ''}</small></button>`).join('')
-    : '<p class="hint">No speakers found yet.</p>';
+  el.innerHTML = ds.length ? ds.map(d => `<button data-d="${esc(d.id)}" class="${d.id === S.dev ? 'sel' : ''}"${d.is_restricted ? ' disabled title="Spotify doesn\'t allow remote control of this device"' : ''}>${IC.spk.replace('<svg', '<svg width="20" height="20"')}${esc(d.id === S.sdkId ? 'This browser' : d.name)}<small>${esc(d.type || '')}${d.is_active ? ' · active' : ''}${d.is_restricted ? ' · can\'t be controlled' : ''}${d.id === S.dev ? ' · selected' : ''}</small></button>`).join('')
+    : `<p class="hint">${quiet ? 'Still looking…' : 'No speakers found yet.'}</p>`;
 }
 async function pickDevice(id){
   const d = S.devs.find(x => x.id === id); if (!d) return;
   S.dev = id; S.devName = id === S.sdkId ? 'This browser' : d.name; S.devVolOK = d.supports_volume !== false;
   LS.set('pc.dev', { id, name: S.devName, sdk: id === S.sdkId });
-  closeSheet(); renderTop();
+  if (S.sheet === 'dev') closeSheet();
+  clearInterval(devTimer); awaitSpotify = false;
+  renderTop(); if (S.view === 'settings') renderMain();
   try { await api('/me/player', { method: 'PUT', body: { device_ids: [id], play: !!S.now.playing } }); } catch (e) { console.warn(e); }
   await sleep(500);
   try { await api('/me/player/shuffle?state=false' + dq('&'), { method: 'PUT' }); await api('/me/player/repeat?state=off' + dq('&'), { method: 'PUT' }); } catch {}
@@ -818,8 +836,8 @@ async function pickDevice(id){
 async function autoPickDevice(){
   if (S.dev) return;
   try {
-    const ds = ((await api('/me/player/devices')) || {}).devices || [];
-    const d = ds.find(x => x.is_active) || (MOBILE && ds.find(x => /smartphone/i.test(x.type)));
+    const ds = await fetchDevices(); S.devs = ds;
+    const d = ds.find(x => x.is_active && x.id !== S.sdkId) || (MOBILE && ds.find(x => /smartphone/i.test(x.type)));
     if (d && !S.dev) { S.dev = d.id; S.devName = d.name; S.devVolOK = d.supports_volume !== false; LS.set('pc.dev', { id: d.id, name: d.name }); renderTop(); }
   } catch {}
 }
@@ -852,7 +870,11 @@ async function wake(on){
     else if (!on && wl) { await wl.release(); wl = null; }
   } catch {}
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { lastPoll = 0; wake(S.now.playing); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  lastPoll = 0; wake(S.now.playing);
+  if (S.tok && (awaitSpotify || S.sheet === 'dev' || (MOBILE && !S.dev))) setTimeout(() => { if (S.sheet === 'dev') listDevices(true); else autoPickDevice(); }, 600);
+});
 
 /* ---------- rendering ---------- */
 function renderTop(){
@@ -1294,7 +1316,7 @@ function bindPhone(){
     g = { row, rin, x: e.clientX, y: e.clientY, id: e.pointerId, mode: null, dx: 0 };
     g.lp = setTimeout(() => {
       if (!g || g.mode || e.target.closest('.rj button')) return;
-      g.mode = 'hold'; blockClickUntil = performance.now() + 800; vib(20);
+      g.mode = 'hold'; blockClickUntil = Infinity; vib(20);
       openMenu(row.dataset.ctx, +row.dataset.i);
     }, 520);
   });
@@ -1317,6 +1339,7 @@ function bindPhone(){
     if (!g || e.pointerId !== g.id) return;
     clearTimeout(g.lp);
     const { row, rin, mode, dx } = g; g = null;
+    if (mode === 'hold') { blockClickUntil = performance.now() + 350; return; }
     if (mode !== 'swipe') return;
     blockClickUntil = performance.now() + 400;
     rin.classList.remove('drag'); rin.style.transform = '';
@@ -1379,6 +1402,7 @@ document.addEventListener('click', e => {
   if (ds.e) return edAct(ds.e);
   if (ds.m) return safe(() => menuAct(ds.m));
   if (ds.a) return safe(() => addTo(ds.a));
+  if (ds.d === 'openapp') { awaitSpotify = true; return; }
   if (ds.d) return ds.d === 'refresh' ? listDevices() : safe(() => pickDevice(ds.d));
   if (ds.p) {
     const [k, arg] = ds.p.split(':');
