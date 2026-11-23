@@ -179,6 +179,8 @@ aside{display:none}
 .chip button{min-height:32px;padding:0 10px}
 .chip .cs{min-height:26px;margin:3px 0;padding:0 9px;border-radius:999px;background:#3a2414;border:1px solid #7a4020;color:var(--acc);font-size:12px;font-weight:700}
 .chip .cs.on{background:var(--acc);border-color:var(--acc);color:#1b0f08}
+.chip .cn{min-height:32px;padding:0 8px;font-size:12px;font-weight:700;opacity:.8}
+.chip .cn:first-child{padding-left:12px}
 .chip .cx{padding:0 10px 0 6px;opacity:.7}
 .presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
 .presets button{min-height:34px;padding:0 12px;border-radius:999px;border:1px dashed #6b5a2a;color:var(--cue);font-size:13px;font-weight:600}
@@ -917,7 +919,7 @@ function drawEd(){
   $('#he').style.left = pct(d.e || t.dur, t.dur) + '%'; $('#he').classList.toggle('flip', pct(d.e || t.dur, t.dur) <= 90);
   $('#edS').textContent = fmt1(d.s || 0);
   $('#edE').textContent = fmt1(d.e || t.dur);
-  $('#edCues').innerHTML = d.cues.map((c, i) => `<span class="chip"><button data-e="cgo:${i}" title="Listen from here">${esc(c.l)} · ${fmt(c.t)}</button><button class="cs${(d.s || 0) === c.t ? ' on' : ''}" data-e="cstart:${i}">${(d.s || 0) === c.t ? 'Starts here' : 'Start here'}</button><button class="cx" data-e="cdel:${i}" aria-label="Delete jump point">✕</button></span>`).join('') || '<span class="hint">None yet.</span>';
+  $('#edCues').innerHTML = d.cues.map((c, i) => `<span class="chip"><button class="cn" data-e="cn:${i}:-1" aria-label="Move ${esc(c.l)} 1 second earlier">−1s</button><button data-e="cgo:${i}" title="Listen from here">${esc(c.l)} · ${fmt1(c.t)}</button><button class="cn" data-e="cn:${i}:1" aria-label="Move ${esc(c.l)} 1 second later">+1s</button><button class="cs${(d.s || 0) === c.t ? ' on' : ''}" data-e="cstart:${i}">${(d.s || 0) === c.t ? 'Starts here' : 'Start here'}</button><button class="cx" data-e="cdel:${i}" aria-label="Delete jump point">✕</button></span>`).join('') || '<span class="hint">None yet.</span>';
   drawEdLive();
 }
 function drawEdLive(){
@@ -975,7 +977,7 @@ function bindEditor(){
 }
 function edAct(a){
   const ed = S.editing; if (!ed) return; const { d, t } = ed;
-  const [k, arg] = a.split(':');
+  const [k, arg, arg2] = a.split(':');
   if (k === 'pstart') return safe(() => edSeek(d.s || 0));
   if (k === 'pend') return safe(() => edSeek(Math.max(0, (d.e || t.dur) - 8000), d.e || null));
   if (k === 'pause') { ed.stopAt = null; S.now.playing = false; renderPlayer(); return safe(pPause); }
@@ -993,6 +995,15 @@ function edAct(a){
     if (k === 'cpre' && !(S.now.playing && same(S.now, t))) toast('Tip: play the song and tap the name when that part starts.', 3500);
     d.cues.push({ t: Math.round(edPos()), l }); d.cues.sort((x, y) => x.t - y.t); if (k === 'cadd') i.value = '';
     return drawEd();
+  }
+  if (k === 'cn') {
+    const c = d.cues[+arg]; if (!c) return;
+    const linked = (d.s || 0) === c.t;
+    const nt = clamp(c.t + (+arg2) * 1000, 0, t.dur - 500);
+    if (linked && nt >= (d.e || t.dur) - 2000) return toast('The start has to stay before the end point.');
+    c.t = nt; if (linked) d.s = nt < 200 ? 0 : nt;
+    d.cues.sort((x, y) => x.t - y.t); drawEd();
+    return edPreview(() => edSeek(c.t));
   }
   if (k === 'cstart') {
     const c = d.cues[+arg]; if (!c) return;
