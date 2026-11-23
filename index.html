@@ -768,7 +768,7 @@ function cover(t, cls = 'art'){ return t.img ? `<img class="${cls}" src="${esc(t
 function row(t, i, ctx, opts = {}){
   const tr = S.trims[t.id];
   const isQ = ctx === 'q';
-  const badge = isQ && hasCut(tr) ? `<span class="badge">${fmt(tr.s || 0)}–${fmt(tr.e || t.dur)}</span>` : '';
+  const badge = '';
   const cues = (!isQ && tr && tr.cues) || [];
   const rj = cues.length ? `<div class="rj">${cues.map((c, k) => `<button${tr.s === c.t ? ' class="st"' : ''} data-act="j:${k}" title="Play from ${esc(c.l)} (${fmt(c.t)})">${esc(c.l)}</button>`).join('')}</div>` : '';
   const btns = opts.q
