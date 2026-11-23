@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#120e18">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Party Cuts</title>
+<title>JUMP</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23120e18'/%3E%3Crect x='10' y='28' width='6' height='8' rx='2' fill='%23ff7a45'/%3E%3Crect x='20' y='18' width='6' height='28' rx='2' fill='%23ff7a45'/%3E%3Crect x='30' y='10' width='6' height='44' rx='2' fill='%23ff4f8b'/%3E%3Crect x='40' y='20' width='6' height='24' rx='2' fill='%23ff7a45'/%3E%3Crect x='50' y='26' width='6' height='12' rx='2' fill='%23ff7a45'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&display=swap" rel="stylesheet">
@@ -30,18 +30,19 @@ button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid va
 input[type=text],input[type=search],input:not([type]){width:100%;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-size:16px}
 .hint{color:var(--mute);font-size:13px;margin:6px 0}
 
-#app{display:grid;grid-template-rows:auto auto 1fr auto;height:100dvh}
-.top{display:flex;align-items:center;gap:10px;padding:10px max(14px,env(safe-area-inset-left)) 6px;padding-top:max(10px,env(safe-area-inset-top))}
-.brand{font-family:var(--head);font-weight:700;font-size:19px;display:flex;align-items:center;gap:8px;margin-right:auto}
+#app{display:grid;grid-template-rows:auto 1fr auto;height:100dvh}
+.top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;padding:0 max(14px,env(safe-area-inset-left));padding-top:env(safe-area-inset-top);border-bottom:1px solid var(--line);min-height:56px}
+.tr{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.brand{font-family:var(--head);font-weight:700;font-size:21px;letter-spacing:.06em;display:flex;align-items:center;gap:8px;justify-self:center}
 .brand i{display:flex;align-items:flex-end;gap:2px;height:18px}
 .brand i b{width:3px;border-radius:2px;background:var(--acc)}
 .devbtn{display:flex;align-items:center;gap:6px;max-width:55vw;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);color:var(--mute);font-size:13px}
 .devbtn svg{width:16px;height:16px;flex:none}
 .devbtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .devbtn.set{color:var(--ok);border-color:#2c5446}
-.tabs{display:flex;gap:4px;padding:0 10px;border-bottom:1px solid var(--line);overflow-x:auto}
-.tabs button{padding:10px 12px;color:var(--mute);font-weight:600;border-bottom:2px solid transparent;white-space:nowrap}
-.tabs button.on{color:var(--ink);border-color:var(--acc)}
+.tabs{display:flex;gap:2px;overflow-x:auto;align-self:stretch;scrollbar-width:none}
+.tabs button{padding:2px 10px 0;min-height:44px;color:var(--mute);font-weight:600;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--acc)}
 .body{display:grid;grid-template-columns:minmax(0,1fr);overflow:hidden}
 main{overflow:auto;padding:16px max(14px,env(safe-area-inset-left)) 24px}
 aside{display:none}
@@ -149,7 +150,12 @@ aside{display:none}
 .modes button{min-height:32px;padding:0 14px;border-radius:999px;font-weight:700;font-size:13px;color:var(--mute)}
 .modes button.on{background:var(--ink);color:var(--bg)}
 body[data-mode=edit] .modes button.on{background:var(--acc);color:var(--acc-ink)}
-@media(max-width:480px){.brand .bt{display:none}.modes button{padding:0 11px}}
+@media(max-width:760px){
+ .top{grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"modes brand dev" "tabs tabs tabs";row-gap:0;padding-top:max(6px,env(safe-area-inset-top))}
+ .tr{display:contents}.modes{grid-area:modes}.devbtn{grid-area:dev;justify-self:end}.brand{grid-area:brand}.tabs{grid-area:tabs;margin:0 -6px}
+ .tabs button{min-height:40px}
+}
+@media(max-width:480px){.modes button{padding:0 11px}.devbtn{padding:0 10px}.devbtn span{display:none}}
 #editor{display:none}
 body[data-mode=edit] #editor{display:block}
 body[data-mode=edit] #jumps,body[data-mode=edit] #bFull{display:none}
@@ -263,16 +269,18 @@ body.edside[data-mode=edit] aside{border-left:2px solid var(--acc)}
 <body>
 <div id="app">
   <header class="top">
-    <div class="brand"><i><b style="height:7px"></b><b style="height:14px"></b><b style="height:18px;background:var(--hype)"></b><b style="height:11px"></b></i><span class="bt">Party Cuts</span></div>
-    <div class="modes" id="modes" role="group" aria-label="Mode"><button data-mode="play">Play</button><button data-mode="edit">Edit</button></div>
-    <button class="devbtn" data-p="dev" id="devbtn"></button>
+    <nav class="tabs" id="tabs">
+      <button data-tab="library">Library</button>
+      <button data-tab="search">Search</button>
+      <button data-tab="queue" class="tq">Queue</button>
+      <button data-tab="settings">Settings</button>
+    </nav>
+    <div class="brand"><i><b style="height:7px"></b><b style="height:14px"></b><b style="height:18px;background:var(--hype)"></b><b style="height:11px"></b></i><span class="bt">JUMP</span></div>
+    <div class="tr">
+      <div class="modes" id="modes" role="group" aria-label="Mode"><button data-mode="play">Play</button><button data-mode="edit">Edit</button></div>
+      <button class="devbtn" data-p="dev" id="devbtn"></button>
+    </div>
   </header>
-  <nav class="tabs" id="tabs">
-    <button data-tab="library">Library</button>
-    <button data-tab="search">Search</button>
-    <button data-tab="queue" class="tq">Queue</button>
-    <button data-tab="settings">Settings</button>
-  </nav>
   <div class="body"><main id="main"></main><aside id="side"><div id="qside"></div></aside></div>
   <footer class="player" id="player">
     <div class="bar" id="pbar"><div class="trk"><div class="fill"></div><div class="cutL"></div><div class="cutR"></div></div><div class="cues"></div></div>
@@ -292,7 +300,7 @@ body.edside[data-mode=edit] aside{border-left:2px solid var(--acc)}
 <div id="setup" hidden>
   <div class="setup">
     <div class="eq"><b style="height:30%"></b><b style="height:55%"></b><b style="height:80%"></b><b style="height:100%"></b><b style="height:62%"></b><b style="height:40%"></b><b style="height:72%"></b><b style="height:90%"></b><b style="height:48%"></b><b style="height:25%"></b></div>
-    <h1>Party Cuts</h1>
+    <h1>JUMP</h1>
     <p class="lede">Your Spotify, with every song starting and ending exactly where you want it to.</p>
     <div class="warn" id="setupMsg" hidden></div>
     <ol class="steps">
@@ -719,7 +727,7 @@ async function autoPickDevice(){
 function loadSDK(){
   if (MOBILE) return;
   window.onSpotifyWebPlaybackSDKReady = () => {
-    const p = new Spotify.Player({ name: 'Party Cuts', getOAuthToken: cb => token().then(cb).catch(() => {}), volume: 0.8 });
+    const p = new Spotify.Player({ name: 'JUMP', getOAuthToken: cb => token().then(cb).catch(() => {}), volume: 0.8 });
     p.addListener('ready', ({ device_id }) => {
       S.sdkId = device_id;
       const saved = LS.get('pc.dev', null);
@@ -751,6 +759,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function renderTop(){
   const b = $('#devbtn');
   b.className = 'devbtn' + (S.dev ? ' set' : '');
+  b.title = S.dev ? 'Playing on ' + (S.devName || 'speaker') : 'Choose speaker';
   b.innerHTML = IC.spk + '<span>' + esc(S.dev ? S.devName || 'Speaker' : 'Choose speaker') + '</span>';
   document.querySelectorAll('#modes button').forEach(x => { x.classList.toggle('on', x.dataset.mode === S.mode); x.setAttribute('aria-pressed', x.dataset.mode === S.mode); });
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === S.view || (S.view === 'playlist' && x.dataset.tab === 'library')));
@@ -947,7 +956,7 @@ async function addTo(pid){
   let p = (S.pls || []).find(x => x.id === pid);
   if (pid === 'new') {
     const name = ($('#npName').value || '').trim(); if (!name) return toast('Type a name for the new playlist.');
-    p = await api('/me/playlists', { method: 'POST', body: { name, public: false, description: 'Made with Party Cuts' } });
+    p = await api('/me/playlists', { method: 'POST', body: { name, public: false, description: 'Made with JUMP' } });
     S.pls = [p].concat(S.pls || []);
   }
   closeSheet();
@@ -1107,7 +1116,7 @@ function bindTimeline(){
 /* ---------- backup ---------- */
 function exportData(){
   const blob = new Blob([JSON.stringify({ app: 'party-cuts', v: 1, saved: new Date().toISOString(), trims: S.trims }, null, 1)], { type: 'application/json' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'party-cuts-backup.json'; document.body.appendChild(a); a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'jump-backup.json'; document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
   toast('Backup downloaded. Send the file to your other device and import it there.', 4500);
 }
@@ -1117,7 +1126,7 @@ async function importData(file){
     if (!j || typeof j.trims !== 'object') throw new Error();
     let n = 0; for (const [id, v] of Object.entries(j.trims)) { if (v && typeof v === 'object') { S.trims[id] = v; n++; } }
     saveTrims(); S.edKey = null; renderPlayer(); refreshLists(); toast('Imported cuts for ' + n + ' song' + (n === 1 ? '' : 's') + '.');
-  } catch { toast("That file isn't a Party Cuts backup."); }
+  } catch { toast("That file isn't a JUMP backup."); }
 }
 
 /* ---------- events ---------- */
@@ -1166,7 +1175,7 @@ document.addEventListener('click', e => {
     if (k === 'playall') return safe(() => playFrom(S.cur.tracks, 0, false, S.cur.name));
     if (k === 'shuf') return safe(() => playFrom(S.cur.tracks, null, true, S.cur.name));
     if (k === 'new') return newPlaylistSheet();
-    if (k === 'create') return safe(async () => { const name = ($('#npName2').value || '').trim(); if (!name) return toast('Type a name first.'); const p = await api('/me/playlists', { method: 'POST', body: { name, public: false, description: 'Made with Party Cuts' } }); S.pls = [p].concat(S.pls || []); closeSheet(); if (S.view === 'library') renderMain(); toast('Created ' + name); });
+    if (k === 'create') return safe(async () => { const name = ($('#npName2').value || '').trim(); if (!name) return toast('Type a name first.'); const p = await api('/me/playlists', { method: 'POST', body: { name, public: false, description: 'Made with JUMP' } }); S.pls = [p].concat(S.pls || []); closeSheet(); if (S.view === 'library') renderMain(); toast('Created ' + name); });
     if (k === 'moresr') return doSearch(S.srQ, true);
     if (k === 'qclear') return qClear();
     return;
