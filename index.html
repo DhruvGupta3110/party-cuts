@@ -987,13 +987,13 @@ function refreshLists(){
 }
 function editPanelHTML(){
   return `<div class="edp">
-  <div class="pt"><label>Start <output id="edS"></output></label><div class="nud"><button data-e="s:-5">−5s</button><button data-e="s:-1">−1s</button><button data-e="s:1">+1s</button><button data-e="s:5">+5s</button><button class="alt" data-e="snow">Set to now</button><button class="alt" data-e="sclr">Song start</button></div></div>
-  <div class="pt"><label>End <output id="edE"></output></label><div class="nud"><button data-e="e:-5">−5s</button><button data-e="e:-1">−1s</button><button data-e="e:1">+1s</button><button data-e="e:5">+5s</button><button class="alt" data-e="enow">Set to now</button><button class="alt" data-e="eclr">Song end</button></div></div>
-  <div class="edplay wide"><button class="btn" data-e="pstart">${IC.play.replace('<svg', '<svg width="16" height="16"')}From start point</button><button class="btn" data-e="pend">Hear the ending</button><button class="btn" data-p="zero">⏮ From 0:00</button></div>
   <div class="cuesbox wide"><label>Jump points</label><div class="chips" id="edCues"></div>
     <small>Tap a name to add a jump point where the song is now</small>
     <div class="presets">${PRESETS.map((n, i) => `<button data-e="cpre:${i}">${esc(n)}</button>`).join('')}</div>
     <div class="addcue"><input id="cueName" placeholder="Your own name" maxlength="16"><button class="btn" data-e="cadd">Add</button></div></div>
+  <div class="pt"><label>Start <output id="edS"></output></label><div class="nud"><button data-e="s:-5">−5s</button><button data-e="s:-1">−1s</button><button data-e="s:1">+1s</button><button data-e="s:5">+5s</button><button class="alt" data-e="snow">Set to now</button><button class="alt" data-e="sclr">Song start</button></div></div>
+  <div class="pt"><label>End <output id="edE"></output></label><div class="nud"><button data-e="e:-5">−5s</button><button data-e="e:-1">−1s</button><button data-e="e:1">+1s</button><button data-e="e:5">+5s</button><button class="alt" data-e="enow">Set to now</button><button class="alt" data-e="eclr">Song end</button></div></div>
+  <div class="edplay wide"><button class="btn" data-e="pstart">${IC.play.replace('<svg', '<svg width="16" height="16"')}From start point</button><button class="btn" data-e="pend">Hear the ending</button><button class="btn" data-p="zero">⏮ From 0:00</button></div>
   </div>`;
 }
 function renderEditPanel(){
