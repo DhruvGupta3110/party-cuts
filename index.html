@@ -178,7 +178,7 @@ body.edside[data-mode=edit] aside{border-left:2px solid var(--acc)}
 .rj{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;flex:0 1 auto;max-width:50%}
 .rj::-webkit-scrollbar{display:none}
 .rj button{flex:none;min-height:28px;padding:0 9px;border-radius:999px;background:var(--jg-bg);border:1px solid var(--jg-line);color:var(--jg-ink);font-size:12px;font-weight:700;white-space:nowrap}
-@media(max-width:700px){.row{flex-wrap:wrap;row-gap:2px}.rj{order:9;flex:1 0 100%;max-width:none;padding-left:50px}}
+@media(max-width:700px){.row,.rin{flex-wrap:wrap;row-gap:2px}.rj{order:9;flex:1 0 100%;max-width:none;padding-left:50px}}
 .rj button:hover{background:var(--jg-hover)}
 .rj button.st{background:var(--cue-bg);border-color:var(--cue-line);color:var(--cue)}
 .rj button.st:hover{background:var(--cue-hover)}
@@ -261,6 +261,73 @@ body.edside[data-mode=edit] aside{border-left:2px solid var(--acc)}
 .setup label{font-weight:700;display:block;margin-bottom:6px}
 .setup .pri{width:100%;min-height:50px;margin-top:12px;font-size:16px}
 
+/* ===== phone (player-only) layout ===== */
+.swh,#pfoot,.btabs{display:none}
+#fp[hidden]{display:none}
+.rin{display:contents}
+body.phone .player,body.phone .top .tabs,body.phone .modes{display:none}
+body.phone #app{grid-template-rows:auto 1fr auto}
+body.phone .top{grid-template-columns:44px minmax(0,1fr) 44px;grid-template-areas:". brand dev";min-height:52px;padding-top:max(4px,env(safe-area-inset-top))}
+body.phone .tr{display:contents}
+body.phone .brand{grid-area:brand;justify-self:center}
+body.phone .devbtn{grid-area:dev;justify-self:end;width:40px;min-height:40px;padding:0;justify-content:center}
+body.phone .devbtn span{display:none}
+body.phone main{padding:12px 0 16px}
+body.phone main>*:not(.rows){margin-left:14px;margin-right:14px}
+body.phone .pl{padding:8px 14px;border-radius:0}
+body.phone #pfoot{display:block;background:#17121f;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.mini{position:relative;display:flex;align-items:center;gap:10px;padding:10px 8px 8px 12px;cursor:pointer}
+.mprog{position:absolute;left:0;right:0;top:0;height:3px;background:#2e2538}
+.mprog i{display:block;height:100%;width:0;background:var(--acc)}
+.mini .art{width:44px;height:44px}
+.mini .ib{width:46px;height:46px;color:var(--ink)}
+.mini .ib svg{width:26px;height:26px}
+#mJumps{padding:0 12px 8px;scrollbar-width:none}
+#mJumps button{min-height:34px;font-size:13px;padding:0 12px}
+body.phone .btabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line)}
+.btabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;color:var(--mute);font-size:11px;font-weight:700}
+.btabs button svg{width:22px;height:22px}
+.btabs button.on{color:var(--acc)}
+/* rows: swipe and hold */
+body.phone .rows{gap:0}
+body.phone .row{position:relative;display:block;padding:0;border-radius:0;overflow:hidden}
+body.phone .row:hover{background:none}
+body.phone .rin{display:flex;align-items:center;gap:12px;flex-wrap:wrap;row-gap:4px;padding:7px 14px;background:var(--bg);position:relative;z-index:1;touch-action:pan-y;transition:transform .2s ease;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+body.phone .rin.drag{transition:none}
+body.phone .row.on .rin{background:#1b1525}
+body.phone .row img{pointer-events:none;-webkit-touch-callout:none}
+body.phone .rj{order:9;flex:1 0 100%;max-width:none;padding-left:52px}
+body.phone .rj button{min-height:32px;font-size:13px;padding:0 11px}
+body.phone .dur{display:block;margin-left:auto}
+body.phone .swh{position:absolute;inset:0;display:flex;align-items:center;padding:0 20px;font-weight:800;font-size:14px;opacity:0}
+body.phone .swh.r{background:#163327;color:var(--ok)}
+body.phone .swh.l{justify-content:flex-end;background:#3a2414;color:var(--acc)}
+body.phone .swh.rm{background:#3a1720;color:#ffb3c4}
+body.phone .row.go-r .swh.r,body.phone .row.go-l .swh.l{opacity:.7}
+body.phone .row.arm .swh{opacity:1}
+body.phone .dh{touch-action:none;color:var(--mute);width:44px;height:44px;margin-right:-8px}
+body.phone .row.lift{z-index:3;overflow:visible}
+body.phone .row.lift .rin{box-shadow:0 8px 24px rgba(0,0,0,.5);background:#221b2c}
+.gh{display:flex;align-items:center;gap:8px;font-size:13px}
+.gh span{flex:1}
+/* full-screen player */
+#fp{position:fixed;inset:0;z-index:45;display:flex;flex-direction:column;gap:6px;padding:max(8px,env(safe-area-inset-top)) 20px max(16px,env(safe-area-inset-bottom));background:linear-gradient(#2b1a24,var(--bg) 60%);overflow:auto;overscroll-behavior:contain}
+.fphead{display:flex;align-items:center;justify-content:space-between;color:var(--mute);font-weight:700;font-size:13px}
+.fphead .ib{color:var(--ink)}
+.fpart{width:min(76vw,38dvh);aspect-ratio:1;object-fit:cover;border-radius:14px;margin:8px auto 10px;background:var(--panel2);box-shadow:0 18px 50px rgba(0,0,0,.55)}
+.fpt b{display:block;font-family:var(--head);font-size:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fpt span{display:block;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#fbar{height:30px}
+#fbar .trk{top:12px;height:6px}
+.fptime{display:flex;justify-content:space-between;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;margin-top:-4px}
+#fCtl{justify-content:space-between;margin:6px 0 10px}
+#fCtl .big{width:68px;height:68px}
+#fCtl .big svg{width:30px;height:30px}
+#fCtl .ib{width:48px;height:48px}
+#fCtl .ib svg{width:24px;height:24px}
+#fJumps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;overflow:visible;padding:0}
+#fJumps button{width:100%;min-height:50px;font-size:15px}
+#fFull{align-self:center;margin-top:8px}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 64px);transform:translateX(-50%);background:#f5f0fa;color:#120e18;padding:10px 16px;border-radius:12px;font-weight:600;z-index:80;max-width:min(92vw,520px);text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.4);transition:opacity .2s}
 #toast[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -295,6 +362,22 @@ body.edside[data-mode=edit] aside{border-left:2px solid var(--acc)}
     </div>
     <div class="jumps" id="jumps"></div>
   </footer>
+  <div id="pfoot">
+    <div class="mini" id="mini" data-p="open">
+      <div class="mprog"><i id="mFill"></i></div>
+      <img class="art" id="mArt" alt="">
+      <div class="meta"><div class="t" id="mT">Nothing playing</div><div class="a" id="mA">Pick a playlist to start</div></div>
+      <button class="ib" data-p="play" id="mPlay" aria-label="Play"></button>
+      <button class="ib" data-p="next" id="mNext" aria-label="Next"></button>
+    </div>
+    <div class="jumps" id="mJumps"></div>
+    <nav class="btabs" id="btabs">
+      <button data-tab="library"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h4v16H4zM10 4h4v16h-4zM16.5 4.5l3.8 1-3.9 14.6-3.8-1z"/></svg>Library</button>
+      <button data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search</button>
+      <button data-tab="queue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h13M3 12h13M3 18h9"/><circle cx="18" cy="18" r="3"/></svg>Queue</button>
+      <button data-tab="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Settings</button>
+    </nav>
+  </div>
 </div>
 
 <div id="setup" hidden>
@@ -317,6 +400,16 @@ body.edside[data-mode=edit] aside{border-left:2px solid var(--acc)}
 </div>
 
 <div id="scrim" hidden><div id="sheet" role="dialog" aria-modal="true"></div></div>
+<div id="fp" hidden>
+  <div class="fphead"><button class="ib" data-p="close" aria-label="Close"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button><span>Now playing</span><button class="ib" data-p="dev" aria-label="Speaker"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><path d="M12 6h.01"/></svg></button></div>
+  <img class="fpart" id="fArt" alt="">
+  <div class="fpt"><b id="fT">Nothing playing</b><span id="fA"></span></div>
+  <div class="bar" id="fbar"><div class="trk"><div class="fill"></div><div class="cutL"></div><div class="cutR"></div></div><div class="cues"></div></div>
+  <div class="fptime"><span id="fPos">0:00</span><span id="fDur">0:00</span></div>
+  <div class="ctl" id="fCtl"></div>
+  <div class="jumps" id="fJumps"></div>
+  <button class="chipbtn" data-p="full" id="fFull">Full song</button>
+</div>
 <div id="toast" hidden role="status"></div>
 
 <script>
@@ -336,6 +429,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const pct = (ms, d) => clamp(ms / (d || 1) * 100, 0, 100);
 const REDIRECT = location.origin + location.pathname;
 const MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const PHONE_DEVICE = /Android.*Mobile|iPhone|iPod/i.test(navigator.userAgent);
+let PHONE = false;
+try { PHONE = PHONE_DEVICE && localStorage.getItem('pc.full') !== 'true'; } catch { PHONE = PHONE_DEVICE; }
+const vib = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
 const API = 'https://api.spotify.com/v1';
 const SCOPES = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing streaming playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read';
 const sv = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -358,6 +455,7 @@ const IC = {
   spk: sv('<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><path d="M12 6h.01"/>'),
   up: sv('<path d="M18 15l-6-6-6 6"/>'), down: sv('<path d="M6 9l6 6 6-6"/>'), x: sv('<path d="M18 6L6 18M6 6l12 12"/>'),
   back: sv('<path d="M15 18l-6-6 6-6"/>'),
+  grip: sv('<path d="M5 9h14M5 15h14"/>'),
   addq: sv('<path d="M3 6h13M3 12h13M3 18h8"/><path d="M18 14v8M14 18h8"/>'),
   heart: '<svg viewBox="0 0 24 24"><path d="M12 21l-1.5-1.3C5 15 2 12.2 2 8.5 2 5.5 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.5 22 8.5c0 3.7-3 6.5-8.5 11.2z" fill="#fff"/></svg>',
   note: sv('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>')
@@ -375,7 +473,7 @@ const S = {
   now: { id: null, pos: 0, base: 0, at: 0, dur: 0, playing: false },
   inst: 0, cutDone: false, busyCut: false, fullKey: null, external: false,
   holdUntil: 0, selfAt: 0, fading: false, fadeVol: null, resumeNeedsReplay: false,
-  mode: LS.get('pc.mode', 'play') === 'edit' ? 'edit' : 'play', edKey: null, drag: null, dragging: false, sheet: null, menu: null
+  mode: !PHONE && LS.get('pc.mode', 'play') === 'edit' ? 'edit' : 'play', edKey: null, drag: null, dragging: false, sheet: null, menu: null
 };
 Object.assign(S, (({list, orig, idx, qn, shuffle, repeat, src}) => ({list: list || [], orig: orig || [], idx: idx ?? -1, qn: qn || 0, shuffle: !!shuffle, repeat: !!repeat, src: src || ''}))(LS.get('pc.q', {})));
 const saveQ = () => LS.set('pc.q', { list: S.list, orig: S.orig, idx: S.idx, qn: S.qn, shuffle: S.shuffle, repeat: S.repeat, src: S.src });
@@ -467,7 +565,8 @@ function handleErr(e){
   else toast(m, 4500);
 }
 const safe = fn => Promise.resolve().then(fn).catch(handleErr);
-const norm = t => ({ id: t.id, uri: t.uri, name: t.name, artists: (t.artists || []).map(a => a.name).join(', '), dur: t.duration_ms, img: pickImg(t.album && t.album.images) });
+const norm = t => ({ id: t.id, uri: t.uri, name: t.name, artists: (t.artists || []).map(a => a.name).join(', '), dur: t.duration_ms, img: pickImg(t.album && t.album.images), imgL: pickBig(t.album && t.album.images) });
+function pickBig(imgs){ if (!imgs || !imgs.length) return ''; const s = imgs.slice().sort((a, b) => (a.width || 0) - (b.width || 0)); return (s.find(i => (i.width || 0) >= 300) || s[s.length - 1]).url; }
 function pickImg(imgs){ if (!imgs || !imgs.length) return ''; const s = imgs.slice().sort((a, b) => (a.width || 0) - (b.width || 0)); return (s.find(i => (i.width || 300) >= 64) || s[s.length - 1]).url; }
 const rel = u => u ? u.replace(API, '') : null;
 const owned = p => p && (p.collaborative || (S.me && p.owner && p.owner.id === S.me.id));
@@ -518,7 +617,7 @@ async function readState(){
   if (isSdk()) {
     const st = await S.sdk.getCurrentState(); if (!st || !st.track_window || !st.track_window.current_track) return null;
     const c = st.track_window.current_track, lf = c.linked_from || {};
-    return { id: lf.id || c.id, uri: lf.uri || c.uri, name: c.name, artists: (c.artists || []).map(a => a.name).join(', '), img: pickImg(c.album && c.album.images), dur: st.duration || c.duration_ms, pos: st.position, playing: !st.paused };
+    return { id: lf.id || c.id, uri: lf.uri || c.uri, name: c.name, artists: (c.artists || []).map(a => a.name).join(', '), img: pickImg(c.album && c.album.images), imgL: pickBig(c.album && c.album.images), dur: st.duration || c.duration_ms, pos: st.position, playing: !st.paused };
   }
   const j = await api('/me/player');
   if (!j || !j.item) return j ? { none: true, playing: false, dev: j.device } : null;
@@ -559,7 +658,7 @@ function applyState(st){
   if (t < S.holdUntil && st.id !== S.now.id) return;
   const changed = st.id !== S.now.id, pchg = st.playing !== S.now.playing;
   if (t < S.holdUntil && !changed && Math.abs(st.pos - S.now.pos) > 2500) return;
-  Object.assign(S.now, { id: st.id, uri: st.uri, name: st.name, artists: st.artists, img: st.img, dur: st.dur, pos: st.pos, base: st.pos, at: t, playing: st.playing });
+  Object.assign(S.now, { id: st.id, uri: st.uri, name: st.name, artists: st.artists, img: st.img, imgL: st.imgL, dur: st.dur, pos: st.pos, base: st.pos, at: t, playing: st.playing });
   if (changed) onTrackChange(st);
   if (changed || pchg) { renderPlayer(); wake(st.playing); markRows(); if (changed) renderSide(); }
 }
@@ -623,7 +722,7 @@ async function playIdx(j, startAt){
   catch (e) { S.idx = prevIdx; throw e; }
   S.external = false; S.resumeNeedsReplay = false;
   S.inst++; S.cutDone = false; S.fullKey = null;
-  Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, dur: t.dur, pos: start, base: start, at: performance.now(), playing: true });
+  Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, imgL: t.imgL, dur: t.dur, pos: start, base: start, at: performance.now(), playing: true });
   S.holdUntil = performance.now() + 2500; lastPoll = performance.now() - 1200;
   if (S.fading) setTimeout(restoreVol, isSdk() ? 150 : 400);
   saveQ(); renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain(); wake(true);
@@ -762,7 +861,7 @@ function renderTop(){
   b.title = S.dev ? 'Playing on ' + (S.devName || 'speaker') : 'Choose speaker';
   b.innerHTML = IC.spk + '<span>' + esc(S.dev ? S.devName || 'Speaker' : 'Choose speaker') + '</span>';
   document.querySelectorAll('#modes button').forEach(x => { x.classList.toggle('on', x.dataset.mode === S.mode); x.setAttribute('aria-pressed', x.dataset.mode === S.mode); });
-  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === S.view || (S.view === 'playlist' && x.dataset.tab === 'library')));
+  document.querySelectorAll('#tabs button, #btabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === S.view || (S.view === 'playlist' && x.dataset.tab === 'library')));
 }
 function cover(t, cls = 'art'){ return t.img ? `<img class="${cls}" src="${esc(t.img)}" alt="" loading="lazy">` : `<div class="${cls}" style="display:grid;place-items:center;color:var(--mute)">${IC.note.replace('<svg', '<svg width="20" height="20"')}</div>`; }
 function row(t, i, ctx, opts = {}){
@@ -771,10 +870,13 @@ function row(t, i, ctx, opts = {}){
   const badge = '';
   const cues = (!isQ && tr && tr.cues) || [];
   const rj = cues.length ? `<div class="rj">${cues.map((c, k) => `<button${tr.s === c.t ? ' class="st"' : ''} data-act="j:${k}" title="Play from ${esc(c.l)} (${fmt(c.t)})">${esc(c.l)}</button>`).join('')}</div>` : '';
-  const btns = opts.q
+  const btns = PHONE
+    ? (opts.q ? `<button class="ib dh" data-act="drag" aria-label="Drag to reorder">${IC.grip}</button>` : '')
+    : opts.q
     ? `<button class="ib" data-act="up" aria-label="Move up">${IC.up}</button><button class="ib" data-act="down" aria-label="Move down">${IC.down}</button><button class="ib" data-act="rm" aria-label="Remove">${IC.x}</button>`
     : `<button class="ib" data-act="queue" aria-label="Add to queue" title="Add to queue">${IC.addq}</button><button class="ib" data-act="menu" aria-label="More options">${IC.more}</button>`;
-  return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div>${rj}${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div>`;
+  const sw = !PHONE || opts.nobtn ? '' : opts.q ? '<span class="swh l rm">Remove</span>' : '<span class="swh r">＋ Add to queue</span><span class="swh l">Play next ↑</span>';
+  return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}"${opts.nobtn ? ' data-cur="1"' : ''}>${sw}<div class="rin">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div>${rj}${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div></div>`;
 }
 function markRows(){ document.querySelectorAll('.row').forEach(r => r.classList.toggle('on', !!S.now.id && r.dataset.id === S.now.id)); }
 function renderMain(){
@@ -796,6 +898,7 @@ function libraryHTML(){
     return `<button class="pl" data-l="pl:${esc(p.id)}">${img ? `<img class="cov" src="${esc(img)}" alt="" loading="lazy">` : `<div class="cov">${IC.note}</div>`}<div><b>${esc(p.name)}</b><span>${n != null ? n + ' songs · ' : ''}${owned(p) ? 'yours' : 'by ' + esc((p.owner && p.owner.display_name) || 'Spotify')}</span></div></button>`; }).join('');
   return h + '</div>';
 }
+function gestureHint(){ return PHONE && !LS.get('pc.gh', false) ? `<div class="note gh"><span>Swipe a song right to add it to the queue, left to play it next. Hold it for more.</span><button class="ib" data-s="gh" aria-label="Got it">${IC.x}</button></div>` : ''; }
 function playlistHTML(){
   const c = S.cur; if (!c) return '';
   const cuts = c.tracks ? c.tracks.filter(t => hasCut(S.trims[t.id])).length : 0;
@@ -806,12 +909,12 @@ function playlistHTML(){
   else if (c.err) h += `<div class="note">${esc(c.err)}</div>`;
   else if (!c.tracks) h += `<p class="hint" id="loadn">Loading songs…</p>`;
   else if (!c.tracks.length) h += `<div class="empty"><h3>${c.kind === 'cuts' ? 'No cuts yet' : 'No songs'}</h3><p>${c.kind === 'cuts' ? 'Switch to Edit at the top, play any song, and set where it starts and ends.' : 'Add songs from Search.'}</p></div>`;
-  else h += '<div class="rows">' + c.tracks.map((t, i) => row(t, i, 'pl')).join('') + '</div>';
+  else h += gestureHint() + '<div class="rows">' + c.tracks.map((t, i) => row(t, i, 'pl')).join('') + '</div>';
   return h;
 }
 function searchHTML(){
   return `<input type="search" id="q" placeholder="Search songs or artists" value="${esc(S.srQ)}" enterkeyhint="search" autocomplete="off">
-  <p class="hint">Tap a song for options, or tap one of its jump points to play it from there.</p>
+  ${PHONE ? gestureHint() : '<p class="hint">Tap a song for options, or tap one of its jump points to play it from there.</p>'}
   <div class="rows">${S.sr.map((t, i) => row(t, i, 'sr')).join('')}</div>
   ${S.sr.length && S.sr.length % 10 === 0 ? '<button class="btn more" data-l="moresr">More results</button>' : ''}`;
 }
@@ -834,6 +937,11 @@ function placeEditor(){
 function settingsHTML(){
   const n = Object.keys(S.trims).length;
   return `<h2 style="margin-bottom:14px">Settings</h2>
+  ${PHONE ? `<section class="card"><h3>Get your cuts from your laptop</h3><p>${n} song${n === 1 ? ' has' : 's have'} cuts on this phone. On your laptop, open JUMP → Settings → <b style="color:var(--ink)">Send to phone</b>, send yourself the link, and open it here. It replaces the cuts on this phone with your laptop's.</p>
+    <div class="acts"><label class="btn" style="cursor:pointer">Import a backup file<input type="file" id="imp" accept=".json,application/json" hidden></label></div></section>`
+  : `<section class="card"><h3>Send to phone</h3><p>${n} song${n === 1 ? ' has' : 's have'} cuts on this device. Make a link that carries all of them, send it to yourself (WhatsApp, Quick Share, email), and open it on your phone. Opening it replaces the phone's cuts with these.</p>
+    <div class="acts"><button class="pri" data-s="sendlink">Copy phone link</button>${navigator.share ? '<button class="btn" data-s="sharelink">Share…</button>' : ''}</div>
+    <p class="hint" style="margin-top:12px">Or use a file: <button class="btn" data-s="export" style="min-height:34px">Download backup</button> <label class="btn" style="cursor:pointer;min-height:34px">Import backup<input type="file" id="imp" accept=".json,application/json" hidden></label></p></section>`}
   <section class="card"><h3>Speaker</h3><p>Music plays on: <b style="color:var(--ink)">${esc(S.dev ? S.devName : 'not chosen yet')}</b></p><button class="btn" data-p="dev">Change speaker</button></section>
   <section class="card"><h3>Cuts</h3>
     <div class="opt"><span>Fade out at each cut</span><div class="seg">${[0, 1, 2, 3].map(v => `<button data-s="fade:${v}" class="${(S.set.fade | 0) === v ? 'on' : ''}">${v ? v + 's' : 'Off'}</button>`).join('')}</div></div>
@@ -841,13 +949,12 @@ function settingsHTML(){
     <label class="tog"><input type="checkbox" data-s="ignore" ${S.set.ignore ? 'checked' : ''}> Play every song in full (ignore all cuts)</label>
     <label class="tog"><input type="checkbox" data-s="awake" ${S.set.awake ? 'checked' : ''}> Keep the screen on while music plays</label>
   </section>
-  <section class="card"><h3>Move your cuts to another device</h3><p>${n} song${n === 1 ? ' has' : 's have'} cuts saved on this device. To use them on your phone (or Mac), download a backup here and import it there. Importing adds to what's already there.</p>
-    <div class="acts"><button class="btn" data-s="export">Download backup</button><label class="btn" style="cursor:pointer">Import backup<input type="file" id="imp" accept=".json,application/json" hidden></label></div></section>
   <section class="card"><h3>Party-night checklist</h3><ul>
     <li>Keep this page open and on screen. It's what makes songs start and stop at your points.</li>
     <li>On your phone: plug in the charger. In phone Settings → Apps → Spotify → Battery, choose <b>Unrestricted</b> so Samsung doesn't pause it.</li>
     <li>In the Spotify app: Settings → Playback → turn <b>Crossfade</b> off and <b>Normalize volume</b> on, so every song is about as loud as the next.</li>
     <li>Do a 5-minute test run with your real speaker before guests arrive.</li></ul></section>
+  ${PHONE_DEVICE ? `<section class="card"><h3>Layout</h3><p>${PHONE ? 'This phone shows the player-only layout. Editing happens on your laptop.' : 'This phone shows the full laptop layout, including Edit mode.'}</p><button class="btn" data-s="layout">${PHONE ? 'Use the full layout instead' : 'Use the phone layout'}</button></section>` : ''}
   <section class="card"><h3>Account</h3><p>Logged in as <b style="color:var(--ink)">${esc(S.me ? S.me.display_name || S.me.id : '…')}</b></p><button class="btn" data-s="logout">Log out</button></section>`;
 }
 function renderPlayer(){
@@ -855,11 +962,28 @@ function renderPlayer(){
   const art = $('#npArt'); if (n.img) { art.src = n.img; art.style.visibility = ''; } else { art.removeAttribute('src'); art.style.visibility = 'hidden'; }
   $('#npT').textContent = n.id ? n.name : 'Nothing playing';
   $('#npA').textContent = n.id ? n.artists : 'Pick a playlist to start';
-  $('#ctl').innerHTML = `<button class="ib${S.shuffle ? ' on' : ''}" data-p="shuf" aria-label="Shuffle" title="Shuffle">${IC.shuf}</button><button class="ib" data-p="prev" aria-label="Previous">${IC.prev}</button><button class="big" data-p="play" aria-label="${n.playing ? 'Pause' : 'Play'}">${n.playing ? IC.pause : IC.play}</button><button class="ib" data-p="next" aria-label="Next">${IC.next}</button><button class="ib${S.repeat ? ' on' : ''}" data-p="rep" aria-label="Repeat" title="Repeat the list">${IC.rep}</button>`;
+  const ctl = `<button class="ib${S.shuffle ? ' on' : ''}" data-p="shuf" aria-label="Shuffle" title="Shuffle">${IC.shuf}</button><button class="ib" data-p="prev" aria-label="Previous">${IC.prev}</button><button class="big" data-p="play" aria-label="${n.playing ? 'Pause' : 'Play'}">${n.playing ? IC.pause : IC.play}</button><button class="ib" data-p="next" aria-label="Next">${IC.next}</button><button class="ib${S.repeat ? ' on' : ''}" data-p="rep" aria-label="Repeat" title="Repeat the list">${IC.rep}</button>`;
+  $('#ctl').innerHTML = ctl;
   const full = $('#bFull'); full.classList.toggle('on', S.fullKey === S.inst && !!n.id); full.hidden = !hasCut(tr);
   const ign = S.set.ignore || S.fullKey === S.inst;
   paintBar($('#pbar'), n.dur, ign ? null : tr, tr);
-  $('#jumps').innerHTML = n.id ? (tr && tr.s ? '<button class="j0" data-p="zero" title="Play from the very beginning">⏮ From 0:00</button>' : '') + (tr && tr.cues || []).map((c, i) => `<button${tr.s === c.t ? ' class="st"' : ''} data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('') : '';
+  const jumps = n.id ? (tr && tr.s ? '<button class="j0" data-p="zero" title="Play from the very beginning">⏮ From 0:00</button>' : '') + (tr && tr.cues || []).map((c, i) => `<button${tr.s === c.t ? ' class="st"' : ''} data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('') : '';
+  $('#jumps').innerHTML = jumps;
+  if (PHONE) {
+    const ma = $('#mArt'); if (n.img) { ma.src = n.img; ma.style.visibility = ''; } else { ma.removeAttribute('src'); ma.style.visibility = 'hidden'; }
+    $('#mT').textContent = n.id ? n.name : 'Nothing playing';
+    $('#mA').textContent = n.id ? n.artists : 'Pick a playlist to start';
+    $('#mPlay').innerHTML = n.playing ? IC.pause : IC.play; $('#mPlay').setAttribute('aria-label', n.playing ? 'Pause' : 'Play');
+    $('#mNext').innerHTML = IC.next;
+    $('#mJumps').innerHTML = jumps;
+    const fa = $('#fArt'), big = n.imgL || n.img; if (big) { fa.src = big; fa.style.visibility = ''; } else { fa.removeAttribute('src'); fa.style.visibility = 'hidden'; }
+    $('#fT').textContent = n.id ? n.name : 'Nothing playing';
+    $('#fA').textContent = n.id ? n.artists : '';
+    $('#fCtl').innerHTML = ctl;
+    $('#fJumps').innerHTML = jumps;
+    const ff = $('#fFull'); ff.hidden = !hasCut(tr); ff.classList.toggle('on', S.fullKey === S.inst && !!n.id);
+    paintBar($('#fbar'), n.dur, ign ? null : tr, tr);
+  }
   drawProgress();
   renderEditPanel();
 }
@@ -872,6 +996,11 @@ function drawProgress(){
   const n = S.now;
   $('#pbar .fill').style.width = n.id ? pct(n.pos, n.dur) + '%' : '0';
   $('#npTime').textContent = n.id ? fmt(n.pos) + ' / ' + fmt(n.dur) : '';
+  if (PHONE) {
+    const w = n.id ? pct(n.pos, n.dur) + '%' : '0';
+    $('#mFill').style.width = w;
+    if (!$('#fp').hidden) { $('#fbar .fill').style.width = w; $('#fPos').textContent = n.id ? fmt(n.pos) : '0:00'; $('#fDur').textContent = n.id ? fmt(n.dur) : '0:00'; }
+  }
 }
 
 /* ---------- views & loading ---------- */
@@ -974,6 +1103,7 @@ function newPlaylistSheet(){
 
 /* ---------- edit mode: in the right panel on wide screens, under the player on phones; saves automatically ---------- */
 function setMode(m){
+  if (PHONE) m = 'play';
   S.mode = m === 'edit' ? 'edit' : 'play'; LS.set('pc.mode', S.mode); document.body.dataset.mode = S.mode;
   S.cutDone = false; S.edKey = null;
   placeEditor(); renderTop(); renderPlayer(); renderSide();
@@ -1113,6 +1243,115 @@ function bindTimeline(){
   tl.addEventListener('pointerup', end); tl.addEventListener('pointercancel', end);
 }
 
+/* ---------- send cuts to the phone as a link ---------- */
+async function packCuts(){
+  let bytes = new TextEncoder().encode(JSON.stringify({ v: 1, trims: S.trims })), tag = 'j';
+  if (window.CompressionStream) {
+    try { const cs = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw')); bytes = new Uint8Array(await new Response(cs).arrayBuffer()); tag = 'z'; } catch {}
+  }
+  let bin = ''; for (let i = 0; i < bytes.length; i += 8192) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+  return tag + btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function unpackCuts(str){
+  const tag = str[0]; let b64 = str.slice(1).replace(/-/g, '+').replace(/_/g, '/'); b64 += '='.repeat((4 - b64.length % 4) % 4);
+  let bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  if (tag === 'z') { const ds = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw')); bytes = new Uint8Array(await new Response(ds).arrayBuffer()); }
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+async function phoneLink(){ return REDIRECT + '#cuts=' + await packCuts(); }
+async function readCutsLink(){
+  if (!location.hash.startsWith('#cuts=')) return;
+  const raw = decodeURIComponent(location.hash.slice(6));
+  history.replaceState(null, '', REDIRECT);
+  try {
+    const d = await unpackCuts(raw);
+    if (!d || typeof d.trims !== 'object') throw new Error();
+    S.trims = d.trims; saveTrims();
+    const n = Object.keys(S.trims).length;
+    setTimeout(() => toast('Loaded cuts for ' + n + ' song' + (n === 1 ? '' : 's') + ' from your laptop.', 4000), 300);
+  } catch { setTimeout(() => toast("That link didn't work. Make a new one on your laptop."), 300); }
+}
+
+/* ---------- phone: full-screen player, swipes, hold and drag ---------- */
+function openFP(){ if (!PHONE) return; $('#fp').hidden = false; renderPlayer(); try { history.pushState({ fp: 1 }, ''); } catch {} }
+function closeFP(fromPop){ const f = $('#fp'); if (f.hidden) return; f.hidden = true; if (!fromPop && history.state && history.state.fp) history.back(); }
+window.addEventListener('popstate', () => { if (!$('#fp').hidden) closeFP(true); });
+window.addEventListener('hashchange', async () => { if (location.hash.startsWith('#cuts=')) { await readCutsLink(); S.edKey = null; renderPlayer(); refreshLists(); } });
+let blockClickUntil = 0;
+function swipeAct(row, dir){
+  const ctx = row.dataset.ctx, i = +row.dataset.i, t = listFor(ctx)[i]; if (!t) return;
+  vib(15);
+  if (ctx === 'q') { if (dir === 'l') { qRemove(i); toast('Removed ' + t.name, 1600); } return; }
+  addQueue(t, dir === 'l');
+}
+function bindPhone(){
+  if (!PHONE) return;
+  let g = null;
+  document.addEventListener('pointerdown', e => {
+    const row = e.target.closest('#main .row'); if (!row) return;
+    const rin = row.querySelector('.rin');
+    if (e.target.closest('.dh')) return startQDrag(e, row, rin);
+    g = { row, rin, x: e.clientX, y: e.clientY, id: e.pointerId, mode: null, dx: 0 };
+    g.lp = setTimeout(() => {
+      if (!g || g.mode || e.target.closest('.rj button')) return;
+      g.mode = 'hold'; blockClickUntil = performance.now() + 800; vib(20);
+      openMenu(row.dataset.ctx, +row.dataset.i);
+    }, 520);
+  });
+  document.addEventListener('pointermove', e => {
+    if (!g || e.pointerId !== g.id) return;
+    const dx = e.clientX - g.x, dy = e.clientY - g.y;
+    if (!g.mode) {
+      if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) { clearTimeout(g.lp); g = null; return; }
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.3) { clearTimeout(g.lp); g.mode = 'swipe'; g.rin.classList.add('drag'); }
+      else return;
+    }
+    if (g.mode !== 'swipe') return;
+    let d = dx;
+    if (g.row.dataset.cur || (g.row.dataset.ctx === 'q' && d > 0)) d = 0;
+    d = Math.max(-160, Math.min(160, d)); g.dx = d;
+    g.rin.style.transform = `translateX(${d}px)`;
+    g.row.classList.toggle('go-r', d > 0); g.row.classList.toggle('go-l', d < 0); g.row.classList.toggle('arm', Math.abs(d) > 90);
+  });
+  const end = (e, cancel) => {
+    if (!g || e.pointerId !== g.id) return;
+    clearTimeout(g.lp);
+    const { row, rin, mode, dx } = g; g = null;
+    if (mode !== 'swipe') return;
+    blockClickUntil = performance.now() + 400;
+    rin.classList.remove('drag'); rin.style.transform = '';
+    setTimeout(() => row.classList.remove('go-r', 'go-l', 'arm'), 200);
+    if (!cancel && Math.abs(dx) > 90) swipeAct(row, dx > 0 ? 'r' : 'l');
+  };
+  document.addEventListener('pointerup', e => end(e, false));
+  document.addEventListener('pointercancel', e => end(e, true));
+  document.addEventListener('click', e => { if (performance.now() < blockClickUntil && e.target.closest('#main')) { e.stopPropagation(); e.preventDefault(); } }, true);
+  document.addEventListener('contextmenu', e => { if (e.target.closest('#main .row')) e.preventDefault(); });
+  // swipe the full-screen player down to close it
+  let fy = null;
+  $('#fp').addEventListener('pointerdown', e => { if (!e.target.closest('button,.bar')) fy = { y: e.clientY, id: e.pointerId }; });
+  $('#fp').addEventListener('pointerup', e => { if (fy && e.pointerId === fy.id && e.clientY - fy.y > 90) closeFP(); fy = null; });
+  $('#fbar').addEventListener('click', e => { if (!S.now.id) return; const r = e.currentTarget.getBoundingClientRect(); safe(() => pSeek(clamp((e.clientX - r.left) / r.width, 0, 1) * S.now.dur)); });
+}
+function startQDrag(e, row, rin){
+  e.preventDefault();
+  const i = +row.dataset.i, h = row.getBoundingClientRect().height, y0 = e.clientY, el = e.target.closest('.dh');
+  try { el.setPointerCapture(e.pointerId); } catch {}
+  row.classList.add('lift'); rin.classList.add('drag'); vib(10);
+  let dy = 0;
+  const mv = ev => { if (ev.pointerId !== e.pointerId) return; dy = ev.clientY - y0; rin.style.transform = `translateY(${dy}px)`; };
+  const up = ev => {
+    if (ev.pointerId !== e.pointerId) return;
+    el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+    row.classList.remove('lift'); rin.classList.remove('drag'); rin.style.transform = '';
+    blockClickUntil = performance.now() + 400;
+    const j = clamp(i + Math.round(dy / h), S.idx + 1, S.list.length - 1);
+    if (j !== i) { const [x] = S.list.splice(i, 1); S.list.splice(j, 0, x); saveQ(); }
+    if (S.view === 'queue') renderMain(); renderSide();
+  };
+  el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+}
+
 /* ---------- backup ---------- */
 function exportData(){
   const blob = new Blob([JSON.stringify({ app: 'party-cuts', v: 1, saved: new Date().toISOString(), trims: S.trims }, null, 1)], { type: 'application/json' });
@@ -1144,6 +1383,8 @@ document.addEventListener('click', e => {
   if (ds.p) {
     const [k, arg] = ds.p.split(':');
     if (k === 'dev') return openDevices();
+    if (k === 'open') return openFP();
+    if (k === 'close') return closeFP();
     if (k === 'play') return safe(togglePlay);
     if (k === 'next') return safe(next);
     if (k === 'prev') return safe(prev);
@@ -1163,6 +1404,10 @@ document.addEventListener('click', e => {
     if (k === 'copyuri') { navigator.clipboard && navigator.clipboard.writeText(REDIRECT).then(() => toast('Copied'), () => toast('Select the address and copy it')); return; }
     if (k === 'fade') { S.set.fade = +arg; saveSet(); return renderMain(); }
     if (k === 'export') return exportData();
+    if (k === 'gh') { LS.set('pc.gh', true); const n = el.closest('.gh'); if (n) n.remove(); return; }
+    if (k === 'layout') { try { localStorage.setItem('pc.full', PHONE ? 'true' : 'false'); } catch {} location.reload(); return; }
+    if (k === 'sendlink') return safe(async () => { const l = await phoneLink(); try { await navigator.clipboard.writeText(l); toast('Link copied. Paste it to yourself (for example on WhatsApp) and open it on your phone.', 5000); } catch { openSheet(`<div class="sh"><h3>Your phone link</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div><p class="hint">Select all of it, copy it and send it to yourself.</p><textarea readonly style="width:100%;height:140px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px">${esc(l)}</textarea>`, 'link'); } });
+    if (k === 'sharelink') return safe(async () => { const l = await phoneLink(); try { await navigator.share({ title: 'JUMP cuts', text: 'Open this on your phone to load your JUMP cuts', url: l }); } catch (er) { if (er && er.name !== 'AbortError') toast('Sharing failed. Use Copy phone link instead.'); } });
     if (k === 'logout') return logout();
     return;
   }
@@ -1189,7 +1434,9 @@ document.addEventListener('click', e => {
   if (ds.act === 'down') return qMove(i, 1);
   if (ds.act === 'rm') return qRemove(i);
   if (ctx === 'pl') return safe(() => playFrom(S.cur.tracks, i, false, S.cur.name));
+  if (ds.act === 'drag') return;
   if (ctx === 'q') return safe(() => jumpTo(i));
+  if (PHONE) return safe(() => playRow(ctx, i, t));
   return openMenu(ctx, i);
 });
 document.addEventListener('input', e => { if (e.target.id === 'q') { clearTimeout(srT); srT = setTimeout(() => doSearch(e.target.value), 400); } });
@@ -1211,7 +1458,10 @@ window.addEventListener('resize', () => { placeEditor(); renderSide(); });
 
 /* ---------- start ---------- */
 async function boot(){
-  document.body.dataset.mode = S.mode; placeEditor(); bindTimeline();
+  document.body.classList.toggle('phone', PHONE);
+  if (PHONE && S.view === 'queue') S.view = 'library';
+  await readCutsLink();
+  document.body.dataset.mode = S.mode; placeEditor(); bindTimeline(); bindPhone();
   renderTop(); renderPlayer(); renderSide();
   try { await handleRedirect(); } catch (e) { showSetup(e.message); return; }
   if (!S.tok) { showSetup(); return; }
