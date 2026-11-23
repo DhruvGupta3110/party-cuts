@@ -120,6 +120,7 @@ aside{display:none}
 .chipbtn.on{color:var(--bg);background:var(--ok);border-color:var(--ok)}
 .jumps{display:flex;gap:6px;overflow-x:auto;padding-top:6px}
 .jumps:empty{display:none}
+.jumps .j0{background:#2a1710;border-color:#6b3a26;color:var(--acc)}
 .qadd{display:flex;gap:6px;overflow-x:auto;padding-top:6px;align-items:center;scrollbar-width:none}
 .qadd:empty{display:none}
 .qadd span{flex:none;color:var(--mute);font-size:12px;font-weight:700;padding-right:2px}
@@ -567,13 +568,13 @@ async function playIdx(j, startAt){
   if (S.fading) setTimeout(restoreVol, isSdk() ? 150 : 400);
   saveQ(); renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain(); wake(true);
 }
-async function playFrom(tracks, i, shuf, src){
+async function playFrom(tracks, i, shuf, src, startAt){
   if (!tracks || !tracks.length) return toast('No songs here yet.');
   ensureDevice();
   S.orig = tracks.slice(); let list = tracks.slice(), start = i || 0;
   if (shuf) { const first = i != null ? list.splice(i, 1)[0] : null; shuffleArr(list); if (first) list.unshift(first); start = 0; }
   S.list = list; S.qn = 0; S.shuffle = !!shuf; S.src = src || ''; S.idx = -1;
-  await playIdx(start);
+  await playIdx(start, startAt);
 }
 async function next(){
   if (S.external && !S.list.length) return api('/me/player/next' + dq(), { method: 'POST' });
@@ -626,7 +627,7 @@ function qRemove(i){
   S.list.splice(i, 1); saveQ(); renderSide(); if (S.view === 'queue') renderMain();
 }
 function qClear(){ S.list.splice(S.idx + 1); S.qn = 0; saveQ(); renderSide(); if (S.view === 'queue') renderMain(); }
-async function jumpTo(i){ if (i === S.idx) return; if (i > S.idx) S.qn = Math.max(0, S.qn - (i - S.idx)); await playIdx(i); }
+async function jumpTo(i, startAt){ if (i === S.idx && startAt == null) return; if (i > S.idx) S.qn = Math.max(0, S.qn - (i - S.idx)); await playIdx(i, startAt); }
 
 /* ---------- devices ---------- */
 async function openDevices(){
@@ -788,7 +789,7 @@ function renderPlayer(){
   const full = $('#bFull'); full.classList.toggle('on', S.fullKey === S.inst && !!n.id); full.hidden = !hasCut(tr);
   const ign = S.set.ignore || S.fullKey === S.inst;
   paintBar($('#pbar'), n.dur, ign ? null : tr, tr);
-  $('#jumps').innerHTML = (tr && tr.cues || []).map((c, i) => `<button data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('');
+  $('#jumps').innerHTML = (n.id && tr && tr.s ? '<button class="j0" data-p="zero" title="Play from the very beginning">⏮ From 0:00</button>' : '') + (tr && tr.cues || []).map((c, i) => `<button data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('');
   $('#qadd').innerHTML = n.id ? '<span>+ Jump point</span>' + PRESETS.map((p, i) => `<button data-p="qa:${i}">${esc(p)}</button>`).join('') + '<button data-p="editnow">Other…</button>' : '';
   drawProgress();
 }
@@ -841,6 +842,7 @@ function openMenu(ctx, i){
   openSheet(`<div class="sh">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
   <div class="mlist">
     <button data-m="playnow">Play now</button>
+    ${S.trims[t.id] && S.trims[t.id].s ? '<button data-m="playzero">Play now from 0:00 (skip the start point)</button>' : ''}
     <button data-m="next">Play next</button>
     <button data-m="queue">Add to queue</button>
     <button data-m="cut">Set start, end and jump points</button>
@@ -852,11 +854,12 @@ function openMenu(ctx, i){
 async function menuAct(a){
   const { ctx, i, t } = S.menu || {}; if (!t) return;
   closeSheet();
-  if (a === 'playnow') {
-    if (ctx === 'pl') return playFrom(S.cur.tracks, i, false, S.cur.name);
-    if (ctx === 'q') return jumpTo(i);
-    if (!S.list.length || S.idx < 0) return playFrom([t], 0, false, 'Search');
-    S.list.splice(S.idx + 1, 0, t); return playIdx(S.idx + 1);
+  if (a === 'playnow' || a === 'playzero') {
+    const z = a === 'playzero' ? 0 : undefined;
+    if (ctx === 'pl') return playFrom(S.cur.tracks, i, false, S.cur.name, z);
+    if (ctx === 'q') return jumpTo(i, z);
+    if (!S.list.length || S.idx < 0) return playFrom([t], 0, false, 'Search', z);
+    S.list.splice(S.idx + 1, 0, t); return playIdx(S.idx + 1, z);
   }
   if (a === 'next') return addQueue(t, true);
   if (a === 'queue') return addQueue(t, false);
@@ -1095,6 +1098,10 @@ document.addEventListener('click', e => {
     if (k === 'full') { S.fullKey = S.fullKey === S.inst ? null : S.inst; renderPlayer(); return toast(S.fullKey ? 'Playing this song in full' : 'Cuts back on for this song', 1800); }
     if (k === 'editnow') { if (!S.now.id) return toast('Nothing is playing.'); const t = S.list[S.idx] && same(S.list[S.idx], S.now) ? S.list[S.idx] : { id: S.now.id, uri: S.now.uri, name: S.now.name, artists: S.now.artists, dur: S.now.dur, img: S.now.img }; return openEditor(t); }
     if (k === 'qa') return quickAdd(PRESETS[+arg]);
+    if (k === 'zero') return safe(async () => {
+      if (S.resumeNeedsReplay && S.list[S.idx]) return playIdx(S.idx, 0);
+      await pSeek(0); if (!S.now.playing) await togglePlay();
+    });
     if (k === 'jump') { const tr = trimFor(S.now); if (tr && tr.cues[+arg]) return safe(() => pSeek(tr.cues[+arg].t)); }
     return;
   }
