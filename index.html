@@ -104,8 +104,6 @@ aside{display:none}
 .bar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);width:0}
 .bar .cutL,.bar .cutR{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(8,5,12,.85) 0 3px,rgba(8,5,12,.35) 3px 6px);z-index:2}
 .bar .cutL{left:0}.bar .cutR{right:0}
-.bar .hype{position:absolute;inset:0;z-index:1}
-.bar .hype i{position:absolute;top:0;bottom:0;background:var(--hype);opacity:.75}
 .bar .cues{position:absolute;left:0;right:0;top:4px;bottom:4px;z-index:3;pointer-events:none}
 .bar .cues i{position:absolute;top:0;bottom:0;width:2px;background:var(--cue);border-radius:1px}
 .prow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px}
@@ -121,12 +119,8 @@ aside{display:none}
 .jumps{display:flex;gap:6px;overflow-x:auto;padding-top:6px}
 .jumps:empty{display:none}
 .jumps .j0{background:#2a1710;border-color:#6b3a26;color:var(--acc)}
-.qadd{display:flex;gap:6px;overflow-x:auto;padding-top:6px;align-items:center;scrollbar-width:none}
-.qadd:empty{display:none}
-.qadd span{flex:none;color:var(--mute);font-size:12px;font-weight:700;padding-right:2px}
-.qadd button{flex:none;min-height:30px;padding:0 11px;border-radius:999px;border:1px dashed #6b5a2a;color:var(--cue);font-weight:600;font-size:12px}
-.qadd button:hover{background:#2a230f}
-.jumps button{flex:none;min-height:32px;padding:0 12px;border-radius:999px;background:#2a230f;border:1px solid #5e4d1f;color:var(--cue);font-weight:600;font-size:13px}
+.jumps button{flex:none;min-height:40px;padding:0 14px;border-radius:999px;background:#2a230f;border:1px solid #5e4d1f;color:var(--cue);font-weight:700;font-size:14px}
+.jumps button:hover{background:#3a3014}
 @media(max-width:700px){
  .prow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"np ext" "ctl ctl"}
  .np{grid-area:np}.ext{grid-area:ext}.ctl{grid-area:ctl;justify-content:space-between;padding:2px 8px}
@@ -147,15 +141,27 @@ aside{display:none}
 .mlist .sel{color:var(--ok)}
 .row2{display:flex;gap:8px;margin:8px 0 14px}
 
-/* editor */
-.edh{display:flex;gap:12px;align-items:center;margin-bottom:6px}
-.edh .art{width:56px;height:56px}
-.edh b{display:block;font-family:var(--head);font-size:17px}
-.edh span{color:var(--mute);font-size:13px}
-.tl{position:relative;height:84px;margin:30px 10px 4px;border-radius:10px;background:repeating-linear-gradient(90deg,#2b2236 0 2px,#221b2c 2px 7px);cursor:pointer;touch-action:none;user-select:none}
-.tl .hype{position:absolute;inset:0}
-.tl .hype i{position:absolute;bottom:0;top:14%;background:linear-gradient(var(--hype),#c2266a);border-radius:4px 4px 0 0;opacity:.9}
-.tl .hype i.live{opacity:.5}
+/* mode switch */
+.modes{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;flex:none}
+.modes button{min-height:32px;padding:0 14px;border-radius:999px;font-weight:700;font-size:13px;color:var(--mute)}
+.modes button.on{background:var(--ink);color:var(--bg)}
+body[data-mode=edit] .modes button.on{background:var(--acc);color:#1b0f08}
+@media(max-width:480px){.brand .bt{display:none}.modes button{padding:0 11px}}
+#etl,#etlt,#edpanel{display:none}
+body[data-mode=edit] #pbar,body[data-mode=edit] #jumps,body[data-mode=edit] #bFull{display:none}
+body[data-mode=edit] #etl{display:block}
+body[data-mode=edit] #etlt{display:flex}
+body[data-mode=edit] #edpanel{display:block}
+body[data-mode=edit] .player{border-top:2px solid var(--acc)}
+
+/* jump points inside song rows */
+.rj{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.rj button{min-height:30px;padding:0 10px;border-radius:999px;background:#2a230f;border:1px solid #5e4d1f;color:var(--cue);font-size:12px;font-weight:700}
+.rj button:hover{background:#3a3014}
+
+/* edit mode timeline + panel */
+.tl{position:relative;height:56px;margin:30px 12px 2px;border-radius:10px;background:repeating-linear-gradient(90deg,#2b2236 0 2px,#221b2c 2px 7px);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.tl .fill{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.07);border-radius:10px 0 0 10px;width:0}
 .tl .cutL,.tl .cutR{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(8,5,12,.86) 0 5px,rgba(30,22,40,.86) 5px 10px);z-index:2}
 .tl .cutL{left:0;border-radius:10px 0 0 10px}.tl .cutR{right:0;border-radius:0 10px 10px 0}
 .tl .cues{position:absolute;inset:0;z-index:3;pointer-events:none}
@@ -166,21 +172,25 @@ aside{display:none}
 .hd::before{content:"";position:absolute;top:22px;bottom:0;width:4px;border-radius:2px;background:var(--acc)}
 .hd span{position:absolute;top:0;right:12px;font-size:11px;font-weight:800;letter-spacing:.02em;background:var(--acc);color:#1b0f08;border-radius:6px;padding:2px 6px;white-space:nowrap}
 .hd.flip span{right:auto;left:12px}
-.tlt{display:flex;justify-content:space-between;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;margin:0 10px 12px}
+.tlt{justify-content:space-between;align-items:center;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;margin:0 12px 4px}
 .tlt b{color:var(--ink);font-size:14px}
-.edplay{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.edgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:12px}
-.pt{background:var(--panel2);border-radius:14px;padding:12px}
-.pt label,.cuesbox label{display:block;font-weight:700;margin-bottom:8px}
-.nud{display:flex;align-items:center;gap:4px;margin-bottom:8px}
-.nud button{min-height:36px;padding:0 10px;border-radius:8px;background:#342a41;font-weight:600;font-size:13px}
-.nud output{flex:1;text-align:center;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
-.pt .acts button{min-height:36px;font-size:13px}
-.hypebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.hold{min-height:52px;padding:0 22px;border-radius:999px;background:#3b1527;border:2px solid var(--hype);color:#ffd2e2;font-weight:700;user-select:none;-webkit-user-select:none;touch-action:none}
-.hold.on{background:var(--hype);color:#fff;transform:scale(.97)}
-.cuesbox{background:var(--panel2);border-radius:14px;padding:12px;margin-bottom:14px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.saved{color:var(--ok);font-weight:700;font-size:12px;margin-left:6px;opacity:0;transition:opacity .3s}
+.saved.on{opacity:1}
+#edpanel{max-height:40dvh;overflow:auto;padding:10px 0 2px;border-top:1px solid var(--line);margin-top:8px;overscroll-behavior:contain}
+@media(min-width:900px){#edpanel{max-height:46dvh}}
+.edp{display:grid;gap:8px}
+@media(min-width:900px){.edp{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.edp .wide{grid-column:1/-1}}
+.pt{background:var(--panel2);border-radius:14px;padding:10px 12px}
+.pt label{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;margin-bottom:6px}
+.pt label output{font-size:17px;font-variant-numeric:tabular-nums}
+.nud{display:flex;flex-wrap:wrap;gap:4px}
+.nud button{min-height:36px;padding:0 10px;border-radius:8px;background:#342a41;font-weight:600;font-size:13px;flex:1 0 auto}
+.nud .alt{background:none;border:1px solid var(--line)}
+.edplay{display:flex;gap:6px;flex-wrap:wrap}
+.edplay .btn{min-height:36px;font-size:13px;padding:0 12px}
+.cuesbox{background:var(--panel2);border-radius:14px;padding:10px 12px}
+.cuesbox label{display:block;font-weight:700;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
 .chip{display:inline-flex;align-items:center;border:1px solid #5e4d1f;border-radius:999px;background:#2a230f;color:var(--cue);font-weight:600;font-size:13px}
 .chip button{min-height:32px;padding:0 10px}
 .chip .cs{min-height:26px;margin:3px 0;padding:0 9px;border-radius:999px;background:#3a2414;border:1px solid #7a4020;color:var(--acc);font-size:12px;font-weight:700}
@@ -188,13 +198,23 @@ aside{display:none}
 .chip .cn{min-height:32px;padding:0 8px;font-size:12px;font-weight:700;opacity:.8}
 .chip .cn:first-child{padding-left:12px}
 .chip .cx{padding:0 10px 0 6px;opacity:.7}
-.presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
 .presets button{min-height:34px;padding:0 12px;border-radius:999px;border:1px dashed #6b5a2a;color:var(--cue);font-size:13px;font-weight:600}
 .presets button:hover{background:#2a230f}
-.cuesbox small{display:block;color:var(--mute);font-size:12px;font-weight:600;margin:10px 0 2px}
+.cuesbox small{display:block;color:var(--mute);font-size:12px;font-weight:600;margin:8px 0 2px}
 .addcue{display:flex;gap:8px}
-.addcue input{flex:1}
-.edfoot{display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:-18px;background:var(--panel);padding:10px 0 4px}
+.addcue input{flex:1;min-height:40px}
+.empty-edit{color:var(--mute);padding:6px 4px 4px;text-align:center;margin:0}
+@media(max-width:700px){
+ body[data-mode=edit] .prow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"np ctl"}
+ body[data-mode=edit] .ext,body[data-mode=edit] .ctl [data-p=shuf],body[data-mode=edit] .ctl [data-p=rep]{display:none}
+ body[data-mode=edit] .ctl{padding:0;gap:4px}
+ body[data-mode=edit] .ctl .big{width:46px;height:46px}
+ body[data-mode=edit] .np .art{width:36px;height:36px}
+ body[data-mode=edit] .tl{margin-top:28px;height:50px}
+ #edpanel{max-height:38dvh}
+}
+@media(max-width:600px){.nud .alt{flex:1 1 40%}}
 
 /* setup */
 #setup{position:fixed;inset:0;z-index:60;background:radial-gradient(1200px 600px at 80% -10%,#3a1630 0,transparent 60%),var(--bg);overflow:auto;display:flex;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 16px 40px}
@@ -222,7 +242,8 @@ aside{display:none}
 <body>
 <div id="app">
   <header class="top">
-    <div class="brand"><i><b style="height:7px"></b><b style="height:14px"></b><b style="height:18px;background:var(--hype)"></b><b style="height:11px"></b></i>Party Cuts</div>
+    <div class="brand"><i><b style="height:7px"></b><b style="height:14px"></b><b style="height:18px;background:var(--hype)"></b><b style="height:11px"></b></i><span class="bt">Party Cuts</span></div>
+    <div class="modes" id="modes" role="group" aria-label="Mode"><button data-mode="play">Play</button><button data-mode="edit">Edit</button></div>
     <button class="devbtn" data-p="dev" id="devbtn"></button>
   </header>
   <nav class="tabs" id="tabs">
@@ -233,14 +254,16 @@ aside{display:none}
   </nav>
   <div class="body"><main id="main"></main><aside id="side"></aside></div>
   <footer class="player" id="player">
-    <div class="bar" id="pbar"><div class="trk"><div class="hype"></div><div class="fill"></div><div class="cutL"></div><div class="cutR"></div></div><div class="cues"></div></div>
+    <div class="bar" id="pbar"><div class="trk"><div class="fill"></div><div class="cutL"></div><div class="cutR"></div></div><div class="cues"></div></div>
+    <div class="tl" id="etl"><div class="fill"></div><div class="cutL"></div><div class="cutR"></div><div class="cues"></div><div class="ph"></div><div class="hd" data-h="s" id="hs"><span>START</span></div><div class="hd" data-h="e" id="he"><span>END</span></div></div>
+    <div class="tlt" id="etlt"><span>0:00</span><span><b id="edPos">–</b><span class="saved" id="edSaved">Saved</span></span><span id="edDur">0:00</span></div>
     <div class="prow">
       <div class="np"><img class="art" id="npArt" alt=""><div class="meta"><div class="t" id="npT">Nothing playing</div><div class="a" id="npA">Pick a playlist to start</div></div></div>
       <div class="ctl" id="ctl"></div>
-      <div class="ext"><span class="time" id="npTime"></span><button class="chipbtn" data-p="full" id="bFull" title="Ignore cuts for this song">Full song</button><button class="ib" data-p="editnow" title="Edit cuts for this song" id="bEdit"></button></div>
+      <div class="ext"><span class="time" id="npTime"></span><button class="chipbtn" data-p="full" id="bFull" title="Ignore cuts for this song">Full song</button></div>
     </div>
     <div class="jumps" id="jumps"></div>
-    <div class="qadd" id="qadd"></div>
+    <div id="edpanel"></div>
   </footer>
 </div>
 
@@ -321,11 +344,12 @@ const S = {
   now: { id: null, pos: 0, base: 0, at: 0, dur: 0, playing: false },
   inst: 0, cutDone: false, busyCut: false, fullKey: null, external: false,
   holdUntil: 0, selfAt: 0, fading: false, fadeVol: null, resumeNeedsReplay: false,
-  editing: null, sheet: null, menu: null
+  mode: LS.get('pc.mode', 'play') === 'edit' ? 'edit' : 'play', edKey: null, drag: null, dragging: false, sheet: null, menu: null
 };
 Object.assign(S, (({list, orig, idx, qn, shuffle, repeat, src}) => ({list: list || [], orig: orig || [], idx: idx ?? -1, qn: qn || 0, shuffle: !!shuffle, repeat: !!repeat, src: src || ''}))(LS.get('pc.q', {})));
 const saveQ = () => LS.set('pc.q', { list: S.list, orig: S.orig, idx: S.idx, qn: S.qn, shuffle: S.shuffle, repeat: S.repeat, src: S.src });
 const saveTrims = () => LS.set('pc.trims', S.trims);
+{ let ch = false; for (const [k, v] of Object.entries(S.trims)) { if (v && v.hype) { delete v.hype; ch = true; if (!v.s && !v.e && !(v.cues && v.cues.length)) delete S.trims[k]; } } if (ch) saveTrims(); }
 const saveSet = () => LS.set('pc.set', S.set);
 const isSdk = () => !!S.sdkId && S.dev === S.sdkId;
 const same = (a, b) => !!a && !!b && (a.id === b.id || (a.uri && a.uri === b.uri) || (a.name === b.name && Math.abs((a.dur || 0) - (b.dur || 0)) < 3000));
@@ -341,7 +365,7 @@ const hasCut = tr => !!tr && !!(tr.s || tr.e);
 let toastT;
 function toast(msg, ms = 3200){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms); }
 function openSheet(html, kind){ S.sheet = kind; $('#sheet').innerHTML = html; $('#scrim').hidden = false; }
-function closeSheet(){ if (S.sheet === 'editor') return closeEditor(); S.sheet = null; $('#scrim').hidden = true; $('#sheet').innerHTML = ''; }
+function closeSheet(){ S.sheet = null; $('#scrim').hidden = true; $('#sheet').innerHTML = ''; }
 
 /* ---------- auth (PKCE, no secret needed) ---------- */
 function rand(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; return Array.from(a, b => c[b % 62]).join(''); }
@@ -493,7 +517,7 @@ async function tick(){
     S.now.pos = Math.min(S.now.dur, S.now.base + (t - S.now.at));
   }
   drawProgress();
-  if (S.editing) drawEdLive();
+  if (S.mode === 'edit') drawEditLive();
   enforce();
 }
 function applyState(st){
@@ -518,14 +542,19 @@ function onTrackChange(st){
     if (j >= 0) { S.qn = Math.max(0, S.qn - (j - S.idx)); S.idx = j; S.external = false; saveQ(); }
     else S.external = true;
   }
-  if ((performance.now() - S.selfAt < 5000 && same(S.selfT, st)) || S.editing || S.set.ignore) return;
+  if ((performance.now() - S.selfAt < 5000 && same(S.selfT, st)) || S.set.ignore) return;
   const tr = trimFor(st);
   if (tr && tr.s && st.pos < tr.s - 200 && st.pos < 12000) safe(() => pSeek(tr.s));
 }
 function enforce(){
   const n = S.now;
-  if (S.editing || !n.playing || !n.id || S.cutDone || S.busyCut) return;
+  if (S.dragging || !n.playing || !n.id || S.cutDone || S.busyCut) return;
   const end = effEnd(); if (end == null) return;
+  const tr = trimFor(n);
+  if (S.mode === 'edit' && tr && tr.e && end === tr.e) {
+    if (n.pos >= end - 150) { S.cutDone = true; S.now.playing = false; S.now.base = S.now.pos; safe(pPause); renderPlayer(); toast('End point reached. Press play to listen past it.', 2200); }
+    return;
+  }
   const fade = (S.set.fade | 0) * 1000;
   if (fade && canFade() && !S.fading && n.pos >= end - fade && n.pos < end - 200) startFade(end - n.pos);
   if (n.pos >= end - (isSdk() ? 100 : 300)) {
@@ -700,16 +729,19 @@ function renderTop(){
   const b = $('#devbtn');
   b.className = 'devbtn' + (S.dev ? ' set' : '');
   b.innerHTML = IC.spk + '<span>' + esc(S.dev ? S.devName || 'Speaker' : 'Choose speaker') + '</span>';
+  document.querySelectorAll('#modes button').forEach(x => { x.classList.toggle('on', x.dataset.mode === S.mode); x.setAttribute('aria-pressed', x.dataset.mode === S.mode); });
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === S.view || (S.view === 'playlist' && x.dataset.tab === 'library')));
 }
 function cover(t, cls = 'art'){ return t.img ? `<img class="${cls}" src="${esc(t.img)}" alt="" loading="lazy">` : `<div class="${cls}" style="display:grid;place-items:center;color:var(--mute)">${IC.note.replace('<svg', '<svg width="20" height="20"')}</div>`; }
 function row(t, i, ctx, opts = {}){
   const tr = S.trims[t.id];
-  const badge = hasCut(tr) ? `<span class="badge">${fmt(tr.s || 0)}–${fmt(tr.e || t.dur)}</span>` : (tr && tr.cues && tr.cues.length ? `<span class="badge c">${tr.cues.length} jump${tr.cues.length > 1 ? 's' : ''}</span>` : '');
+  const badge = hasCut(tr) ? `<span class="badge">${fmt(tr.s || 0)}–${fmt(tr.e || t.dur)}</span>` : '';
+  const cues = (tr && tr.cues) || [];
+  const rj = cues.length ? `<div class="rj">${cues.map((c, k) => `<button data-act="j:${k}" title="Play from ${esc(c.l)} (${fmt(c.t)})">${esc(c.l)}</button>`).join('')}</div>` : '';
   const btns = opts.q
     ? `<button class="ib" data-act="up" aria-label="Move up">${IC.up}</button><button class="ib" data-act="down" aria-label="Move down">${IC.down}</button><button class="ib" data-act="rm" aria-label="Remove">${IC.x}</button>`
-    : `<button class="ib" data-act="cut" aria-label="Edit cuts" title="Edit cuts">${IC.cut}</button><button class="ib" data-act="menu" aria-label="More options">${IC.more}</button>`;
-  return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div>${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div>`;
+    : `<button class="ib" data-act="menu" aria-label="More options">${IC.more}</button>`;
+  return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div>${rj}</div>${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div>`;
 }
 function markRows(){ document.querySelectorAll('.row').forEach(r => r.classList.toggle('on', !!S.now.id && r.dataset.id === S.now.id)); }
 function renderMain(){
@@ -740,13 +772,13 @@ function playlistHTML(){
   if (c.blocked) h += `<div class="note">Spotify only lets apps like this read playlists you made or collaborate on. To use this one: in the Spotify app open it, tap ⋯ → <b>Add to other playlist</b> → <b>New playlist</b>, then open your copy here.</div>`;
   else if (c.err) h += `<div class="note">${esc(c.err)}</div>`;
   else if (!c.tracks) h += `<p class="hint" id="loadn">Loading songs…</p>`;
-  else if (!c.tracks.length) h += `<div class="empty"><h3>${c.kind === 'cuts' ? 'No cuts yet' : 'No songs'}</h3><p>${c.kind === 'cuts' ? 'Tap the scissors next to any song to set where it starts and ends.' : 'Add songs from Search.'}</p></div>`;
+  else if (!c.tracks.length) h += `<div class="empty"><h3>${c.kind === 'cuts' ? 'No cuts yet' : 'No songs'}</h3><p>${c.kind === 'cuts' ? 'Switch to Edit at the top, play any song, and set where it starts and ends.' : 'Add songs from Search.'}</p></div>`;
   else h += '<div class="rows">' + c.tracks.map((t, i) => row(t, i, 'pl')).join('') + '</div>';
   return h;
 }
 function searchHTML(){
   return `<input type="search" id="q" placeholder="Search songs or artists" value="${esc(S.srQ)}" enterkeyhint="search" autocomplete="off">
-  <p class="hint">Tap a song to play it now, queue it, add it to a playlist or set its cuts.</p>
+  <p class="hint">Tap a song for options, or tap one of its jump points to play it from there.</p>
   <div class="rows">${S.sr.map((t, i) => row(t, i, 'sr')).join('')}</div>
   ${S.sr.length && S.sr.length % 10 === 0 ? '<button class="btn more" data-l="moresr">More results</button>' : ''}`;
 }
@@ -785,18 +817,16 @@ function renderPlayer(){
   $('#npT').textContent = n.id ? n.name : 'Nothing playing';
   $('#npA').textContent = n.id ? n.artists : 'Pick a playlist to start';
   $('#ctl').innerHTML = `<button class="ib${S.shuffle ? ' on' : ''}" data-p="shuf" aria-label="Shuffle" title="Shuffle">${IC.shuf}</button><button class="ib" data-p="prev" aria-label="Previous">${IC.prev}</button><button class="big" data-p="play" aria-label="${n.playing ? 'Pause' : 'Play'}">${n.playing ? IC.pause : IC.play}</button><button class="ib" data-p="next" aria-label="Next">${IC.next}</button><button class="ib${S.repeat ? ' on' : ''}" data-p="rep" aria-label="Repeat" title="Repeat the list">${IC.rep}</button>`;
-  $('#bEdit').innerHTML = IC.cut;
   const full = $('#bFull'); full.classList.toggle('on', S.fullKey === S.inst && !!n.id); full.hidden = !hasCut(tr);
   const ign = S.set.ignore || S.fullKey === S.inst;
   paintBar($('#pbar'), n.dur, ign ? null : tr, tr);
-  $('#jumps').innerHTML = (n.id && tr && tr.s ? '<button class="j0" data-p="zero" title="Play from the very beginning">⏮ From 0:00</button>' : '') + (tr && tr.cues || []).map((c, i) => `<button data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('');
-  $('#qadd').innerHTML = n.id ? '<span>+ Jump point</span>' + PRESETS.map((p, i) => `<button data-p="qa:${i}">${esc(p)}</button>`).join('') + '<button data-p="editnow">Other…</button>' : '';
+  $('#jumps').innerHTML = n.id ? (tr && tr.s ? '<button class="j0" data-p="zero" title="Play from the very beginning">⏮ From 0:00</button>' : '') + (tr && tr.cues || []).map((c, i) => `<button data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('') : '';
   drawProgress();
+  renderEditPanel();
 }
 function paintBar(el, dur, cut, deco){
   el.querySelector('.cutL').style.width = cut && cut.s ? pct(cut.s, dur) + '%' : '0';
   el.querySelector('.cutR').style.width = cut && cut.e ? (100 - pct(cut.e, dur)) + '%' : '0';
-  el.querySelector('.hype').innerHTML = (deco && deco.hype || []).map(([a, b]) => `<i style="left:${pct(a, dur)}%;width:${pct(b - a, dur)}%"></i>`).join('');
   el.querySelector('.cues').innerHTML = (deco && deco.cues || []).map(c => `<i style="left:${pct(c.t, dur)}%"></i>`).join('');
 }
 function drawProgress(){
@@ -845,27 +875,28 @@ function openMenu(ctx, i){
     ${S.trims[t.id] && S.trims[t.id].s ? '<button data-m="playzero">Play now from 0:00 (skip the start point)</button>' : ''}
     <button data-m="next">Play next</button>
     <button data-m="queue">Add to queue</button>
-    <button data-m="cut">Set start, end and jump points</button>
+    <button data-m="cut">Edit this song (start, end, jump points)</button>
     <button data-m="add">Add to a playlist</button>
     ${canRm ? '<button data-m="remove">Remove from this playlist</button>' : ''}
     ${S.trims[t.id] ? '<button data-m="clear">Delete this song\'s cuts</button>' : ''}
   </div>`, 'menu');
 }
+async function playRow(ctx, i, t, ms, restart){
+  if (!restart && ms != null && S.now.id && same(S.now, t) && !S.resumeNeedsReplay) { await pSeek(ms); if (!S.now.playing) await togglePlay(); return; }
+  if (ctx === 'pl') return playFrom(S.cur.tracks, i, false, S.cur.name, ms);
+  if (ctx === 'q') return jumpTo(i, ms);
+  if (!S.list.length || S.idx < 0) return playFrom([t], 0, false, 'Search', ms);
+  S.list.splice(S.idx + 1, 0, t); return playIdx(S.idx + 1, ms);
+}
 async function menuAct(a){
   const { ctx, i, t } = S.menu || {}; if (!t) return;
   closeSheet();
-  if (a === 'playnow' || a === 'playzero') {
-    const z = a === 'playzero' ? 0 : undefined;
-    if (ctx === 'pl') return playFrom(S.cur.tracks, i, false, S.cur.name, z);
-    if (ctx === 'q') return jumpTo(i, z);
-    if (!S.list.length || S.idx < 0) return playFrom([t], 0, false, 'Search', z);
-    S.list.splice(S.idx + 1, 0, t); return playIdx(S.idx + 1, z);
-  }
+  if (a === 'playnow' || a === 'playzero') return playRow(ctx, i, t, a === 'playzero' ? 0 : undefined, true);
   if (a === 'next') return addQueue(t, true);
   if (a === 'queue') return addQueue(t, false);
-  if (a === 'cut') return openEditor(t);
+  if (a === 'cut') { setMode('edit'); if (S.now.id && same(S.now, t)) return; return playRow(ctx, i, t); }
   if (a === 'add') return openAddTo(t);
-  if (a === 'clear') { delete S.trims[t.id]; saveTrims(); refreshAfterTrim(); return toast('Cuts deleted'); }
+  if (a === 'clear') { delete S.trims[t.id]; saveTrims(); S.edKey = null; renderPlayer(); refreshLists(); return toast('Cuts deleted'); }
   if (a === 'remove') {
     const pid = S.cur.id;
     try { await api(`/playlists/${pid}/items`, { method: 'DELETE', body: { items: [{ uri: t.uri }] } }); }
@@ -902,162 +933,144 @@ function newPlaylistSheet(){
   setTimeout(() => { const i = $('#npName2'); if (i) i.focus(); }, 50);
 }
 
-/* ---------- cut editor ---------- */
-function openEditor(t){
-  const d = JSON.parse(JSON.stringify(S.trims[t.id] || {}));
-  d.cues = d.cues || []; d.hype = d.hype || [];
-  S.editing = { t, d, previewed: false, lastPos: same(S.now, t) && S.now.id ? S.now.pos : (d.s || 0), hold: null, stopAt: null, drag: null };
-  openSheet(`<div class="edh">${cover(t)}<div class="meta"><b>${esc(t.name)}</b><span>${esc(t.artists)} · ${fmt(t.dur)}</span></div><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
-  <p class="hint">Plays on: ${esc(S.dev ? S.devName : 'no speaker chosen')}. Tap the bar to listen from any spot. Drag the orange handles to set where the song starts and ends.</p>
-  <div class="tl" id="tl"><div class="hype"></div><div class="cutL"></div><div class="cutR"></div><div class="cues"></div><div class="ph" id="ph"></div><div class="hd" data-h="s" id="hs"><span>START</span></div><div class="hd" data-h="e" id="he"><span>END</span></div></div>
-  <div class="tlt"><span>0:00</span><b id="edPos">0:00.0</b><span>${fmt(t.dur)}</span></div>
-  <div class="edplay"><button class="btn" data-e="pstart">${IC.play.replace('<svg', '<svg width="16" height="16"')}Play from start point</button><button class="btn" data-e="pend">Hear the ending</button><button class="btn" data-e="pause">Pause</button></div>
-  <div class="edgrid">
-    <div class="pt"><label>Start</label><div class="nud"><button data-e="s:-5">−5s</button><button data-e="s:-1">−1s</button><output id="edS"></output><button data-e="s:1">+1s</button><button data-e="s:5">+5s</button></div><div class="acts"><button class="btn" data-e="snow">Set to where it's playing</button><button class="btn" data-e="sclr">From the beginning</button></div></div>
-    <div class="pt"><label>End</label><div class="nud"><button data-e="e:-5">−5s</button><button data-e="e:-1">−1s</button><output id="edE"></output><button data-e="e:1">+1s</button><button data-e="e:5">+5s</button></div><div class="acts"><button class="btn" data-e="enow">Set to where it's playing</button><button class="btn" data-e="eclr">To the very end</button></div></div>
-  </div>
-  <div class="hypebox"><button class="hold" id="hold">Hold while it's hype</button><button class="btn" data-e="hclr">Clear hype map</button></div>
-  <p class="hint" style="margin-top:-6px">While the song plays, hold the pink button during the loud, exciting parts. They're drawn on the bar so you can see the song's shape at a glance.</p>
-  <div class="cuesbox"><label>Jump points</label><div class="chips" id="edCues"></div>
-    <small>Tap a name to add a jump point where the song is playing now</small>
+/* ---------- edit mode: everything lives in the bottom bar and saves automatically ---------- */
+function setMode(m){
+  S.mode = m === 'edit' ? 'edit' : 'play'; LS.set('pc.mode', S.mode); document.body.dataset.mode = S.mode;
+  S.cutDone = false; S.edKey = null;
+  renderTop(); renderPlayer();
+  if (S.mode === 'edit') toast(S.now.id ? 'Edit mode: changes save automatically. Songs pause at their end point.' : 'Edit mode: play any song, then set its start, end and jump points below the player.', 3200);
+}
+function editTarget(){
+  const n = S.now; if (!n.id) return null;
+  const c = S.list[S.idx], src = c && same(c, n) ? c : n;
+  const id = S.trims[n.id] ? n.id : (c && same(c, n) && S.trims[c.id] ? c.id : (src.id || n.id));
+  return { id, t: { id: src.id || n.id, uri: src.uri || n.uri, name: src.name || n.name, artists: src.artists || n.artists, dur: n.dur || src.dur, img: src.img || n.img } };
+}
+function edData(){ const et = editTarget(); if (!et) return null; const tr = S.trims[et.id] || {}; return { et, d: { s: tr.s || 0, e: tr.e || 0, cues: (tr.cues || []).map(c => ({ t: c.t, l: c.l })) } }; }
+let listT, savedT;
+function commitEdit(et, d){
+  const o = {}; if (d.s) o.s = Math.round(d.s); if (d.e) o.e = Math.round(d.e); if (d.cues.length) o.cues = d.cues.slice().sort((x, y) => x.t - y.t);
+  if (Object.keys(o).length) S.trims[et.id] = Object.assign(o, { u: et.t.uri, n: et.t.name, a: et.t.artists, d: et.t.dur, i: et.t.img }); else delete S.trims[et.id];
+  saveTrims();
+  S.cutDone = !!(d.e && S.now.pos >= d.e - 500);
+  renderPlayer();
+  const sv = $('#edSaved'); if (sv) { sv.classList.add('on'); clearTimeout(savedT); savedT = setTimeout(() => sv.classList.remove('on'), 1200); }
+  clearTimeout(listT); listT = setTimeout(refreshLists, 350);
+}
+function refreshLists(){
+  const m = $('#main'), y = m.scrollTop;
+  if (S.view === 'search') { const r = m.querySelector('.rows'); if (r) r.innerHTML = S.sr.map((t, i) => row(t, i, 'sr')).join(''); }
+  else if (S.view !== 'settings') renderMain();
+  m.scrollTop = y; renderSide();
+}
+function editPanelHTML(){
+  return `<div class="edp">
+  <div class="pt"><label>Start <output id="edS"></output></label><div class="nud"><button data-e="s:-5">−5s</button><button data-e="s:-1">−1s</button><button data-e="s:1">+1s</button><button data-e="s:5">+5s</button><button class="alt" data-e="snow">Set to now</button><button class="alt" data-e="sclr">Song start</button></div></div>
+  <div class="pt"><label>End <output id="edE"></output></label><div class="nud"><button data-e="e:-5">−5s</button><button data-e="e:-1">−1s</button><button data-e="e:1">+1s</button><button data-e="e:5">+5s</button><button class="alt" data-e="enow">Set to now</button><button class="alt" data-e="eclr">Song end</button></div></div>
+  <div class="edplay wide"><button class="btn" data-e="pstart">${IC.play.replace('<svg', '<svg width="16" height="16"')}From start point</button><button class="btn" data-e="pend">Hear the ending</button><button class="btn" data-p="zero">⏮ From 0:00</button></div>
+  <div class="cuesbox wide"><label>Jump points</label><div class="chips" id="edCues"></div>
+    <small>Tap a name to add a jump point where the song is now</small>
     <div class="presets">${PRESETS.map((n, i) => `<button data-e="cpre:${i}">${esc(n)}</button>`).join('')}</div>
-    <div class="addcue"><input id="cueName" placeholder="Your own name" maxlength="16"><button class="btn" data-e="cadd">Add at current spot</button></div>
-    <p class="hint">Jump points show as buttons under the player so you can skip straight to them during the party. Tap <b>Start here</b> on one to make the song begin there.</p></div>
-  <div class="edfoot"><button class="btn" data-e="cancel">Cancel</button><button class="pri" data-e="save">Save</button></div>`, 'editor');
-  drawEd(); bindEditor();
+    <div class="addcue"><input id="cueName" placeholder="Your own name" maxlength="16"><button class="btn" data-e="cadd">Add</button></div></div>
+  </div>`;
 }
-function edPos(){ const ed = S.editing; return ed && S.now.id && same(S.now, ed.t) ? S.now.pos : (ed ? ed.lastPos : 0); }
-function drawEd(){
-  const ed = S.editing; if (!ed) return; const { t, d } = ed, tl = $('#tl'); if (!tl) return;
-  paintBar(tl, t.dur, d, d);
-  tl.querySelector('.cues').innerHTML = d.cues.map((c, i) => `<i style="left:${pct(c.t, t.dur)}%"><span${i % 2 ? ' style="top:auto;bottom:3px"' : ''}>${esc(c.l)}</span></i>`).join('');
-  $('#hs').style.left = pct(d.s || 0, t.dur) + '%'; $('#hs').classList.toggle('flip', pct(d.s || 0, t.dur) < 10);
-  $('#he').style.left = pct(d.e || t.dur, t.dur) + '%'; $('#he').classList.toggle('flip', pct(d.e || t.dur, t.dur) <= 90);
-  $('#edS').textContent = fmt1(d.s || 0);
-  $('#edE').textContent = fmt1(d.e || t.dur);
-  $('#edCues').innerHTML = d.cues.map((c, i) => `<span class="chip"><button class="cn" data-e="cn:${i}:-1" aria-label="Move ${esc(c.l)} 1 second earlier">−1s</button><button data-e="cgo:${i}" title="Listen from here">${esc(c.l)} · ${fmt1(c.t)}</button><button class="cn" data-e="cn:${i}:1" aria-label="Move ${esc(c.l)} 1 second later">+1s</button><button class="cs${(d.s || 0) === c.t ? ' on' : ''}" data-e="cstart:${i}">${(d.s || 0) === c.t ? 'Starts here' : 'Start here'}</button><button class="cx" data-e="cdel:${i}" aria-label="Delete jump point">✕</button></span>`).join('') || '<span class="hint">None yet.</span>';
-  drawEdLive();
-}
-function drawEdLive(){
-  const ed = S.editing; if (!ed) return; const ph = $('#ph'); if (!ph) return;
-  const p = edPos();
-  ph.style.left = pct(p, ed.t.dur) + '%';
-  $('#edPos').textContent = fmt1(p);
-  const hy = $('#tl .hype'); let live = hy.querySelector('.live');
-  if (ed.hold) { if (!live) { live = document.createElement('i'); live.className = 'live'; hy.appendChild(live); } const a = ed.hold.from, b = Math.min(ed.t.dur, a + performance.now() - ed.hold.t0); live.style.left = pct(a, ed.t.dur) + '%'; live.style.width = pct(b - a, ed.t.dur) + '%'; }
-  else if (live) live.remove();
-  if (ed.stopAt != null && S.now.playing && same(S.now, ed.t) && p >= ed.stopAt) { ed.stopAt = null; S.now.playing = false; safe(pPause); renderPlayer(); }
-}
-async function edSeek(ms, stopAt){
-  const ed = S.editing; if (!ed) return;
-  ms = clamp(Math.round(ms), 0, ed.t.dur - 500); ed.lastPos = ms; ed.stopAt = stopAt ?? null;
-  if (S.now.id && same(S.now, ed.t)) {
-    await pSeek(ms);
-    if (!S.now.playing) { await pResume(); S.now.playing = true; S.now.at = performance.now(); renderPlayer(); }
-  } else {
-    ensureDevice();
-    S.selfAt = performance.now(); S.selfT = ed.t; S.holdUntil = S.selfAt + 2500;
-    await pPlay([ed.t.uri], ms);
-    ed.previewed = true; S.resumeNeedsReplay = true; S.inst++;
-    const t = ed.t;
-    Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, dur: t.dur, pos: ms, base: ms, at: performance.now(), playing: true });
-    renderPlayer();
+function renderEditPanel(){
+  if (S.mode !== 'edit') return;
+  const et = editTarget(), key = et ? et.id : '';
+  if (key !== S.edKey) {
+    S.edKey = key;
+    $('#edpanel').innerHTML = et ? editPanelHTML() : '<p class="empty-edit">Tap any song to play it. Then set where it starts and ends, and add jump points, right here. Everything saves automatically.</p>';
   }
+  drawEdit();
+}
+function drawEdit(){
+  if (S.mode !== 'edit') return;
+  const x = edData(), tl = $('#etl'), dur = S.now.dur || 1;
+  const d = S.drag ? S.drag.d : (x ? x.d : { s: 0, e: 0, cues: [] });
+  tl.querySelector('.cutL').style.width = d.s ? pct(d.s, dur) + '%' : '0';
+  tl.querySelector('.cutR').style.width = d.e ? (100 - pct(d.e, dur)) + '%' : '0';
+  tl.querySelector('.cues').innerHTML = d.cues.map((c, i) => `<i style="left:${pct(c.t, dur)}%"><span${i % 2 ? ' style="top:auto;bottom:3px"' : ''}>${esc(c.l)}</span></i>`).join('');
+  const hs = $('#hs'), he = $('#he');
+  hs.style.display = he.style.display = x ? '' : 'none';
+  hs.style.left = pct(d.s || 0, dur) + '%'; hs.classList.toggle('flip', pct(d.s || 0, dur) < 10);
+  he.style.left = pct(d.e || dur, dur) + '%'; he.classList.toggle('flip', pct(d.e || dur, dur) <= 90);
+  $('#edDur').textContent = S.now.id ? fmt(S.now.dur) : '0:00';
+  const es = $('#edS'); if (es) es.textContent = fmt1(d.s || 0);
+  const ee = $('#edE'); if (ee) ee.textContent = fmt1(d.e || dur);
+  const ec = $('#edCues');
+  if (ec) ec.innerHTML = d.cues.map((c, i) => `<span class="chip"><button class="cn" data-e="cn:${i}:-1" aria-label="Move ${esc(c.l)} 1 second earlier">−1s</button><button data-e="cgo:${i}" title="Listen from here">${esc(c.l)} · ${fmt1(c.t)}</button><button class="cn" data-e="cn:${i}:1" aria-label="Move ${esc(c.l)} 1 second later">+1s</button><button class="cs${(d.s || 0) === c.t ? ' on' : ''}" data-e="cstart:${i}">${(d.s || 0) === c.t ? 'Starts here' : 'Start here'}</button><button class="cx" data-e="cdel:${i}" aria-label="Delete ${esc(c.l)}">✕</button></span>`).join('') || '<span class="hint">None yet.</span>';
+  drawEditLive();
+}
+function drawEditLive(){
+  const n = S.now, tl = $('#etl'), p = n.id ? pct(n.pos, n.dur) + '%' : '0';
+  tl.querySelector('.ph').style.left = p; tl.querySelector('.fill').style.width = p;
+  $('#edPos').textContent = n.id ? fmt1(n.pos) : '–';
+}
+async function edSeek(ms){
+  if (!S.now.id) return toast('Play a song first.');
+  await pSeek(clamp(Math.round(ms), 0, Math.max(0, S.now.dur - 500)));
+  if (!S.now.playing) { ensureDevice(); await pResume(); S.now.playing = true; S.now.at = performance.now(); renderPlayer(); wake(true); }
 }
 let edDeb;
 const edPreview = fn => { clearTimeout(edDeb); edDeb = setTimeout(() => safe(fn), 450); };
-function bindEditor(){
-  const tl = $('#tl'), hold = $('#hold');
-  const msAt = e => { const r = tl.getBoundingClientRect(); return clamp((e.clientX - r.left) / r.width, 0, 1) * S.editing.t.dur; };
-  tl.addEventListener('pointerdown', e => {
-    const ed = S.editing; const h = e.target.closest('.hd');
-    if (h) { ed.drag = h.dataset.h; tl.setPointerCapture(e.pointerId); e.preventDefault(); return; }
-    safe(() => edSeek(msAt(e)));
-  });
-  tl.addEventListener('pointermove', e => {
-    const ed = S.editing; if (!ed || !ed.drag) return; const { d, t } = ed, v = msAt(e);
-    if (ed.drag === 's') d.s = v < 400 ? 0 : clamp(v, 0, (d.e || t.dur) - 2000);
-    else d.e = v > t.dur - 400 ? 0 : clamp(v, (d.s || 0) + 2000, t.dur);
-    drawEd();
-  });
-  const endDrag = () => { const ed = S.editing; if (!ed || !ed.drag) return; const { d, t } = ed, which = ed.drag; ed.drag = null;
-    if (which === 's') edPreview(() => edSeek(d.s || 0)); else edPreview(() => edSeek(Math.max(0, (d.e || t.dur) - 6000), d.e || null)); };
-  tl.addEventListener('pointerup', endDrag); tl.addEventListener('pointercancel', endDrag);
-  const hDown = e => { e.preventDefault(); const ed = S.editing; if (!S.now.playing || !same(S.now, ed.t)) { toast('Play the song first, then hold the button during the hype parts.'); return; } ed.hold = { from: edPos(), t0: performance.now() }; hold.classList.add('on'); try { hold.setPointerCapture(e.pointerId); } catch {} };
-  const hUp = () => { const ed = S.editing; if (!ed || ed.hold == null) return; const a = ed.hold.from, b = Math.min(ed.t.dur, a + performance.now() - ed.hold.t0); ed.hold = null; hold.classList.remove('on');
-    if (b - a > 250) { const hs = ed.d.hype.concat([[Math.round(a), Math.round(b)]]).sort((x, y) => x[0] - y[0]), out = [];
-      for (const r of hs) { const l = out[out.length - 1]; if (l && r[0] <= l[1] + 500) l[1] = Math.max(l[1], r[1]); else out.push(r.slice()); }
-      ed.d.hype = out; } drawEd(); };
-  hold.addEventListener('pointerdown', hDown); hold.addEventListener('pointerup', hUp); hold.addEventListener('pointercancel', hUp);
-  hold.addEventListener('contextmenu', e => e.preventDefault());
-}
 function edAct(a){
-  const ed = S.editing; if (!ed) return; const { d, t } = ed;
+  const x = edData(); if (!x) return toast('Play a song first.');
   const [k, arg, arg2] = a.split(':');
+  const { et, d } = x, dur = et.t.dur || S.now.dur, pos = S.now.pos;
+  const commit = () => commitEdit(et, d);
   if (k === 'pstart') return safe(() => edSeek(d.s || 0));
-  if (k === 'pend') return safe(() => edSeek(Math.max(0, (d.e || t.dur) - 8000), d.e || null));
-  if (k === 'pause') { ed.stopAt = null; S.now.playing = false; renderPlayer(); return safe(pPause); }
-  if (k === 's') { d.s = clamp((d.s || 0) + (+arg) * 1000, 0, (d.e || t.dur) - 2000); if (d.s < 200) d.s = 0; drawEd(); return edPreview(() => edSeek(d.s || 0)); }
-  if (k === 'e') { d.e = clamp((d.e || t.dur) + (+arg) * 1000, (d.s || 0) + 2000, t.dur); if (d.e > t.dur - 200) d.e = 0; drawEd(); return edPreview(() => edSeek(Math.max(0, (d.e || t.dur) - 5000), d.e || null)); }
-  if (k === 'snow') { const p = edPos(); if (p >= (d.e || t.dur) - 2000) return toast('The start has to be before the end.'); d.s = p < 200 ? 0 : Math.round(p); return drawEd(); }
-  if (k === 'enow') { const p = edPos(); if (p <= (d.s || 0) + 2000) return toast('The end has to be after the start.'); d.e = Math.round(p); return drawEd(); }
-  if (k === 'sclr') { d.s = 0; return drawEd(); }
-  if (k === 'eclr') { d.e = 0; return drawEd(); }
-  if (k === 'hclr') { d.hype = []; return drawEd(); }
+  if (k === 'pend') return safe(() => edSeek(Math.max(0, (d.e || dur) - 8000)));
+  if (k === 's') { d.s = clamp((d.s || 0) + (+arg) * 1000, 0, (d.e || dur) - 2000); if (d.s < 200) d.s = 0; commit(); return edPreview(() => edSeek(d.s || 0)); }
+  if (k === 'e') { d.e = clamp((d.e || dur) + (+arg) * 1000, (d.s || 0) + 2000, dur); if (d.e > dur - 200) d.e = 0; commit(); return edPreview(() => edSeek(Math.max(0, (d.e || dur) - 5000))); }
+  if (k === 'snow') { if (pos >= (d.e || dur) - 2000) return toast('The start has to be before the end.'); d.s = pos < 200 ? 0 : Math.round(pos); return commit(); }
+  if (k === 'enow') { if (pos <= (d.s || 0) + 2000) return toast('The end has to be after the start.'); d.e = Math.round(pos); return commit(); }
+  if (k === 'sclr') { d.s = 0; return commit(); }
+  if (k === 'eclr') { d.e = 0; return commit(); }
   if (k === 'cadd' || k === 'cpre') {
     if (d.cues.length >= 8) return toast('Up to 8 jump points per song.');
-    const i = $('#cueName');
-    const l = uniqueLabel(d.cues, k === 'cpre' ? PRESETS[+arg] : ((i.value || '').trim() || 'Jump'));
-    if (k === 'cpre' && !(S.now.playing && same(S.now, t))) toast('Tip: play the song and tap the name when that part starts.', 3500);
-    d.cues.push({ t: Math.round(edPos()), l }); d.cues.sort((x, y) => x.t - y.t); if (k === 'cadd') i.value = '';
-    return drawEd();
+    const inp = $('#cueName');
+    const l = uniqueLabel(d.cues, k === 'cpre' ? PRESETS[+arg] : ((inp && inp.value || '').trim() || 'Jump'));
+    d.cues.push({ t: Math.round(pos), l }); if (k === 'cadd' && inp) inp.value = '';
+    commit(); return toast('Added ' + l + ' at ' + fmt(pos), 1600);
   }
   if (k === 'cn') {
     const c = d.cues[+arg]; if (!c) return;
-    const linked = (d.s || 0) === c.t;
-    const nt = clamp(c.t + (+arg2) * 1000, 0, t.dur - 500);
-    if (linked && nt >= (d.e || t.dur) - 2000) return toast('The start has to stay before the end point.');
+    const linked = (d.s || 0) === c.t, nt = clamp(c.t + (+arg2) * 1000, 0, dur - 500);
+    if (linked && nt >= (d.e || dur) - 2000) return toast('The start has to stay before the end point.');
     c.t = nt; if (linked) d.s = nt < 200 ? 0 : nt;
-    d.cues.sort((x, y) => x.t - y.t); drawEd();
-    return edPreview(() => edSeek(c.t));
+    commit(); return edPreview(() => edSeek(nt));
   }
   if (k === 'cstart') {
     const c = d.cues[+arg]; if (!c) return;
-    if (c.t >= (d.e || t.dur) - 2000) return toast('That spot is after the end point. Move the end point later first.');
-    d.s = c.t < 200 ? 0 : c.t; drawEd(); toast('The song will start at ' + c.l + ' (' + fmt(c.t) + '). Tap Save to keep it.', 3000);
+    if (c.t >= (d.e || dur) - 2000) return toast('That spot is after the end point. Move the end point later first.');
+    d.s = c.t < 200 ? 0 : c.t; commit(); toast('The song now starts at ' + c.l + ' (' + fmt(c.t) + ').', 2200);
     return edPreview(() => edSeek(d.s || 0));
   }
-  if (k === 'cgo') return safe(() => edSeek(d.cues[+arg].t));
-  if (k === 'cdel') { d.cues.splice(+arg, 1); return drawEd(); }
-  if (k === 'cancel') return closeEditor();
-  if (k === 'save') {
-    const o = {}; if (d.s) o.s = Math.round(d.s); if (d.e) o.e = Math.round(d.e); if (d.cues.length) o.cues = d.cues; if (d.hype.length) o.hype = d.hype;
-    if (Object.keys(o).length) S.trims[t.id] = Object.assign(o, { u: t.uri, n: t.name, a: t.artists, d: t.dur, i: t.img });
-    else delete S.trims[t.id];
-    saveTrims(); closeEditor(); refreshAfterTrim(); toast(Object.keys(o).length ? 'Saved' : 'Cuts removed for this song', 1800);
-  }
+  if (k === 'cgo') { const c = d.cues[+arg]; if (c) return safe(() => edSeek(c.t)); return; }
+  if (k === 'cdel') { d.cues.splice(+arg, 1); return commit(); }
 }
-function closeEditor(){
-  const ed = S.editing; S.editing = null; S.sheet = null; $('#scrim').hidden = true; $('#sheet').innerHTML = '';
-  if (ed && ed.previewed && S.now.playing) { S.now.playing = false; safe(pPause); }
-  if (ed && ed.previewed) S.external = !(S.list[S.idx] && same(S.list[S.idx], S.now));
-  S.cutDone = false; renderPlayer();
-}
-function refreshAfterTrim(){ renderPlayer(); if (['playlist', 'library', 'search', 'queue'].includes(S.view)) renderMain(); renderSide(); }
-
-/* ---------- quick-add jump points from the player ---------- */
-function quickAdd(name){
-  const n = S.now; if (!n.id) return toast('Nothing is playing.');
-  const c = S.list[S.idx];
-  const id = S.trims[n.id] ? n.id : (c && same(c, n) && S.trims[c.id] ? c.id : n.id);
-  const src = c && same(c, n) ? c : n;
-  const tr = S.trims[id] || (S.trims[id] = { u: src.uri, n: src.name, a: src.artists, d: src.dur, i: src.img });
-  tr.cues = tr.cues || [];
-  if (tr.cues.length >= 8) return toast('Up to 8 jump points per song. Delete one in the editor first.');
-  const l = uniqueLabel(tr.cues, name), t = Math.round(n.pos);
-  tr.cues.push({ t, l }); tr.cues.sort((x, y) => x.t - y.t);
-  saveTrims(); renderPlayer(); renderSide(); if (S.view !== 'settings') renderMain();
-  toast('Added ' + l + ' at ' + fmt(t) + '. Fine-tune it with the scissors button.', 2600);
+function bindTimeline(){
+  const tl = $('#etl');
+  const msAt = e => { const r = tl.getBoundingClientRect(); return clamp((e.clientX - r.left) / r.width, 0, 1) * (S.now.dur || 0); };
+  tl.addEventListener('pointerdown', e => {
+    if (!S.now.id) return;
+    const h = e.target.closest('.hd');
+    if (h) { const x = edData(); if (!x) return; S.drag = { which: h.dataset.h, et: x.et, d: x.d }; S.dragging = true; try { tl.setPointerCapture(e.pointerId); } catch {} e.preventDefault(); return; }
+    safe(() => edSeek(msAt(e)));
+  });
+  tl.addEventListener('pointermove', e => {
+    const g = S.drag; if (!g) return;
+    const dur = g.et.t.dur || S.now.dur, v = msAt(e), d = g.d;
+    if (g.which === 's') d.s = v < 400 ? 0 : clamp(v, 0, (d.e || dur) - 2000);
+    else d.e = v > dur - 400 ? 0 : clamp(v, (d.s || 0) + 2000, dur);
+    drawEdit();
+  });
+  const end = () => {
+    const g = S.drag; if (!g) return; S.drag = null; S.dragging = false;
+    commitEdit(g.et, g.d);
+    if (g.which === 's') edPreview(() => edSeek(g.d.s || 0)); else edPreview(() => edSeek(Math.max(0, (g.d.e || g.et.t.dur) - 6000)));
+  };
+  tl.addEventListener('pointerup', end); tl.addEventListener('pointercancel', end);
 }
 
 /* ---------- backup ---------- */
@@ -1072,17 +1085,18 @@ async function importData(file){
     const j = JSON.parse(await file.text());
     if (!j || typeof j.trims !== 'object') throw new Error();
     let n = 0; for (const [id, v] of Object.entries(j.trims)) { if (v && typeof v === 'object') { S.trims[id] = v; n++; } }
-    saveTrims(); refreshAfterTrim(); renderMain(); toast('Imported cuts for ' + n + ' song' + (n === 1 ? '' : 's') + '.');
+    saveTrims(); S.edKey = null; renderPlayer(); refreshLists(); toast('Imported cuts for ' + n + ' song' + (n === 1 ? '' : 's') + '.');
   } catch { toast("That file isn't a Party Cuts backup."); }
 }
 
 /* ---------- events ---------- */
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-tab],[data-p],[data-l],[data-act],[data-m],[data-d],[data-e],[data-s],[data-a],[data-x],.row');
+  const el = e.target.closest('[data-tab],[data-mode],[data-p],[data-l],[data-act],[data-m],[data-d],[data-e],[data-s],[data-a],[data-x],.row');
   if (!el) { if (e.target.id === 'scrim') closeSheet(); return; }
   const ds = el.dataset;
   if (ds.x) return closeSheet();
   if (ds.tab) return setView(ds.tab);
+  if (ds.mode) return setMode(ds.mode);
   if (ds.e) return edAct(ds.e);
   if (ds.m) return safe(() => menuAct(ds.m));
   if (ds.a) return safe(() => addTo(ds.a));
@@ -1096,8 +1110,6 @@ document.addEventListener('click', e => {
     if (k === 'shuf') return setShuffle(!S.shuffle);
     if (k === 'rep') { S.repeat = !S.repeat; saveQ(); renderPlayer(); return toast(S.repeat ? 'The list will start again at the end' : 'Stop at the end of the list', 1800); }
     if (k === 'full') { S.fullKey = S.fullKey === S.inst ? null : S.inst; renderPlayer(); return toast(S.fullKey ? 'Playing this song in full' : 'Cuts back on for this song', 1800); }
-    if (k === 'editnow') { if (!S.now.id) return toast('Nothing is playing.'); const t = S.list[S.idx] && same(S.list[S.idx], S.now) ? S.list[S.idx] : { id: S.now.id, uri: S.now.uri, name: S.now.name, artists: S.now.artists, dur: S.now.dur, img: S.now.img }; return openEditor(t); }
-    if (k === 'qa') return quickAdd(PRESETS[+arg]);
     if (k === 'zero') return safe(async () => {
       if (S.resumeNeedsReplay && S.list[S.idx]) return playIdx(S.idx, 0);
       await pSeek(0); if (!S.now.playing) await togglePlay();
@@ -1130,7 +1142,7 @@ document.addEventListener('click', e => {
   }
   const r = el.closest('.row'); if (!r) return;
   const ctx = r.dataset.ctx, i = +r.dataset.i, t = listFor(ctx)[i]; if (!t) return;
-  if (ds.act === 'cut') return openEditor(t);
+  if (ds.act && ds.act.startsWith('j:')) { const c = (S.trims[t.id] && S.trims[t.id].cues || [])[+ds.act.slice(2)]; if (c) return safe(() => playRow(ctx, i, t, c.t)); return; }
   if (ds.act === 'menu') return openMenu(ctx, i);
   if (ds.act === 'up') return qMove(i, -1);
   if (ds.act === 'down') return qMove(i, 1);
@@ -1145,6 +1157,7 @@ document.addEventListener('keydown', e => {
   if (e.target.id === 'cid' && e.key === 'Enter') login();
   if (e.key === 'Escape' && S.sheet) closeSheet();
   if (e.key === ' ' && !/INPUT|TEXTAREA|BUTTON/.test(e.target.tagName) && !S.sheet && S.tok) { e.preventDefault(); safe(togglePlay); }
+  if (e.target.id === 'cueName' && e.key === 'Enter') edAct('cadd');
 });
 document.addEventListener('change', e => {
   const s = e.target.dataset && e.target.dataset.s;
@@ -1157,6 +1170,7 @@ window.addEventListener('resize', () => renderSide());
 
 /* ---------- start ---------- */
 async function boot(){
+  document.body.dataset.mode = S.mode; bindTimeline();
   renderTop(); renderPlayer(); renderSide();
   try { await handleRedirect(); } catch (e) { showSetup(e.message); return; }
   if (!S.tok) { showSetup(); return; }
