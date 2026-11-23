@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#120e18">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Party Cuts</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23120e18'/%3E%3Crect x='10' y='28' width='6' height='8' rx='2' fill='%23ff7a45'/%3E%3Crect x='20' y='18' width='6' height='28' rx='2' fill='%23ff7a45'/%3E%3Crect x='30' y='10' width='6' height='44' rx='2' fill='%23ff4f8b'/%3E%3Crect x='40' y='20' width='6' height='24' rx='2' fill='%23ff7a45'/%3E%3Crect x='50' y='26' width='6' height='12' rx='2' fill='%23ff7a45'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#120e18;--panel:#1c1625;--panel2:#261e31;--line:#33293f;--ink:#f5f0fa;--mute:#a69ab6;--acc:#ff7a45;--hype:#ff4f8b;--cue:#ffd166;--ok:#5ee3b0;--head:"Sora",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer;padding:0}
+a{color:var(--acc)}
+h1,h2,h3{font-family:var(--head);margin:0;line-height:1.15}
+h2{font-size:22px}h3{font-size:16px}
+img{display:block}
+.btn,.pri{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 16px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-weight:600;white-space:nowrap}
+.pri{background:var(--acc);border-color:var(--acc);color:#1b0f08}
+.btn:hover{border-color:#4a3d5c}.pri:hover{filter:brightness(1.07)}
+button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--acc);outline-offset:2px}
+.ib{width:40px;height:40px;display:inline-grid;place-items:center;border-radius:50%;color:var(--mute);flex:none}
+.ib:hover{color:var(--ink);background:var(--panel2)}
+.ib svg{width:20px;height:20px}
+.ib.on{color:var(--acc)}
+input[type=text],input[type=search],input:not([type]){width:100%;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-size:16px}
+.hint{color:var(--mute);font-size:13px;margin:6px 0}
+
+#app{display:grid;grid-template-rows:auto auto 1fr auto;height:100dvh}
+.top{display:flex;align-items:center;gap:10px;padding:10px max(14px,env(safe-area-inset-left)) 6px;padding-top:max(10px,env(safe-area-inset-top))}
+.brand{font-family:var(--head);font-weight:700;font-size:19px;display:flex;align-items:center;gap:8px;margin-right:auto}
+.brand i{display:flex;align-items:flex-end;gap:2px;height:18px}
+.brand i b{width:3px;border-radius:2px;background:var(--acc)}
+.devbtn{display:flex;align-items:center;gap:6px;max-width:55vw;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);color:var(--mute);font-size:13px}
+.devbtn svg{width:16px;height:16px;flex:none}
+.devbtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.devbtn.set{color:var(--ok);border-color:#2c5446}
+.tabs{display:flex;gap:4px;padding:0 10px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{padding:10px 12px;color:var(--mute);font-weight:600;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ink);border-color:var(--acc)}
+.body{display:grid;grid-template-columns:minmax(0,1fr);overflow:hidden}
+main{overflow:auto;padding:16px max(14px,env(safe-area-inset-left)) 24px}
+aside{display:none}
+@media(min-width:1000px){.body{grid-template-columns:minmax(0,1fr) 380px}aside{display:block;overflow:auto;border-left:1px solid var(--line);padding:16px}.tabs .tq{display:none}main{padding:20px 28px 32px}}
+
+.rows{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:10px;padding:6px 6px;border-radius:10px;cursor:pointer}
+.row:hover{background:var(--panel)}
+.row.on .t{color:var(--acc)}
+.art{width:44px;height:44px;border-radius:6px;object-fit:cover;background:var(--panel2);flex:none}
+.meta{flex:1}
+.t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.a{color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dur{color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums;flex:none}
+.badge{flex:none;font-size:12px;font-weight:700;color:var(--acc);border:1px solid #6b3a26;background:#2a1710;border-radius:999px;padding:2px 8px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge.c{color:var(--cue);border-color:#5e4d1f;background:#241d0b}
+@media(max-width:600px){.dur{display:none}.row .ib{width:36px}}
+
+.libhead{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.libhead h2{margin-right:auto}
+.pl{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:8px;border-radius:12px}
+.pl:hover{background:var(--panel)}
+.cov{width:52px;height:52px;border-radius:8px;background:var(--panel2);object-fit:cover;flex:none;display:grid;place-items:center}
+.cov svg{width:24px;height:24px}
+.cov.liked{background:linear-gradient(135deg,#5b2bd6,#b45cf0)}
+.cov.cuts{background:linear-gradient(135deg,#ff7a45,#ff4f8b);color:#1b0f08}
+.pl b{display:block;font-weight:600}
+.pl span{color:var(--mute);font-size:13px}
+.plhead{display:flex;gap:16px;align-items:flex-end;margin:4px 0 16px;flex-wrap:wrap}
+.plhead img,.plhead .cov{width:96px;height:96px;border-radius:10px;object-fit:cover}
+.plhead .ttl{flex:1 1 200px}
+.plhead h2{font-size:clamp(22px,4vw,32px)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--mute);font-weight:600;min-height:36px}
+.back svg{width:18px;height:18px}
+.empty{text-align:center;color:var(--mute);padding:40px 16px}
+.empty h3{color:var(--ink);margin-bottom:6px}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--mute);font-size:14px;margin:8px 0}
+.qh{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--mute);font-size:13px;font-family:inherit;font-weight:700;margin:16px 6px 6px}
+.qh:first-child{margin-top:0}
+.qh button{color:var(--acc);font-weight:600}
+.more{margin:12px auto;display:flex}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px;max-width:680px}
+.card h3{margin-bottom:8px}
+.card p{margin:0 0 10px;color:var(--mute)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{padding:8px 14px;color:var(--mute);font-weight:600}
+.seg button.on{background:var(--acc);color:#1b0f08}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.tog{display:flex;gap:10px;align-items:center;margin:8px 0;cursor:pointer}
+.tog input{width:20px;height:20px;accent-color:var(--acc)}
+.card ul{margin:0;padding-left:18px;color:var(--mute)}
+.card li{margin:4px 0}
+
+/* player */
+.player{border-top:1px solid var(--line);background:#17121f;padding:0 max(12px,env(safe-area-inset-left)) max(10px,env(safe-area-inset-bottom))}
+.bar{position:relative;height:22px;cursor:pointer;touch-action:none}
+.bar .trk{position:absolute;left:0;right:0;top:9px;height:5px;border-radius:3px;background:#3a3047;overflow:hidden}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);width:0}
+.bar .cutL,.bar .cutR{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(8,5,12,.85) 0 3px,rgba(8,5,12,.35) 3px 6px);z-index:2}
+.bar .cutL{left:0}.bar .cutR{right:0}
+.bar .hype{position:absolute;inset:0;z-index:1}
+.bar .hype i{position:absolute;top:0;bottom:0;background:var(--hype);opacity:.75}
+.bar .cues{position:absolute;left:0;right:0;top:4px;bottom:4px;z-index:3;pointer-events:none}
+.bar .cues i{position:absolute;top:0;bottom:0;width:2px;background:var(--cue);border-radius:1px}
+.prow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px}
+.np{display:flex;align-items:center;gap:10px}
+.np .art{width:48px;height:48px}
+.ctl{display:flex;align-items:center;gap:2px}
+.ctl .big{width:52px;height:52px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+.ctl .big svg{width:24px;height:24px}
+.ext{display:flex;align-items:center;justify-content:flex-end;gap:6px}
+.time{color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chipbtn{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:600;color:var(--mute);white-space:nowrap}
+.chipbtn.on{color:var(--bg);background:var(--ok);border-color:var(--ok)}
+.jumps{display:flex;gap:6px;overflow-x:auto;padding-top:6px}
+.jumps:empty{display:none}
+.jumps button{flex:none;min-height:32px;padding:0 12px;border-radius:999px;background:#2a230f;border:1px solid #5e4d1f;color:var(--cue);font-weight:600;font-size:13px}
+@media(max-width:700px){
+ .prow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"np ext" "ctl ctl"}
+ .np{grid-area:np}.ext{grid-area:ext}.ctl{grid-area:ctl;justify-content:space-between;padding:2px 8px}
+ .np .art{width:42px;height:42px}
+}
+
+/* sheet */
+#scrim{position:fixed;inset:0;background:rgba(6,4,10,.66);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+#scrim[hidden]{display:none}
+#sheet{width:min(720px,100%);max-height:92dvh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:20px 20px 0 0;padding:18px max(16px,env(safe-area-inset-left)) max(18px,env(safe-area-inset-bottom))}
+@media(min-width:760px){#scrim{align-items:center}#sheet{border-radius:20px}}
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sh h3{margin-right:auto}
+.mlist{display:flex;flex-direction:column}
+.mlist button{display:flex;align-items:center;gap:10px;text-align:left;min-height:48px;padding:0 10px;border-radius:10px;font-weight:600}
+.mlist button:hover{background:var(--panel2)}
+.mlist button small{color:var(--mute);font-weight:400;margin-left:auto}
+.mlist .sel{color:var(--ok)}
+.row2{display:flex;gap:8px;margin:8px 0 14px}
+
+/* editor */
+.edh{display:flex;gap:12px;align-items:center;margin-bottom:6px}
+.edh .art{width:56px;height:56px}
+.edh b{display:block;font-family:var(--head);font-size:17px}
+.edh span{color:var(--mute);font-size:13px}
+.tl{position:relative;height:84px;margin:30px 10px 4px;border-radius:10px;background:repeating-linear-gradient(90deg,#2b2236 0 2px,#221b2c 2px 7px);cursor:pointer;touch-action:none;user-select:none}
+.tl .hype{position:absolute;inset:0}
+.tl .hype i{position:absolute;bottom:0;top:14%;background:linear-gradient(var(--hype),#c2266a);border-radius:4px 4px 0 0;opacity:.9}
+.tl .hype i.live{opacity:.5}
+.tl .cutL,.tl .cutR{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(8,5,12,.86) 0 5px,rgba(30,22,40,.86) 5px 10px);z-index:2}
+.tl .cutL{left:0;border-radius:10px 0 0 10px}.tl .cutR{right:0;border-radius:0 10px 10px 0}
+.tl .cues{position:absolute;inset:0;z-index:3;pointer-events:none}
+.tl .cues i{position:absolute;top:0;bottom:0;width:2px;background:var(--cue)}
+.tl .cues i span{position:absolute;top:3px;left:5px;font-size:11px;font-weight:700;font-style:normal;color:var(--cue);white-space:nowrap;text-shadow:0 1px 2px #000}
+.tl .ph{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;z-index:4;pointer-events:none;box-shadow:0 0 6px #fff}
+.hd{position:absolute;top:-26px;bottom:-6px;width:28px;margin-left:-14px;z-index:5;cursor:ew-resize;display:flex;justify-content:center}
+.hd::before{content:"";position:absolute;top:22px;bottom:0;width:4px;border-radius:2px;background:var(--acc)}
+.hd span{position:absolute;top:0;right:12px;font-size:11px;font-weight:800;letter-spacing:.02em;background:var(--acc);color:#1b0f08;border-radius:6px;padding:2px 6px;white-space:nowrap}
+.hd.flip span{right:auto;left:12px}
+.tlt{display:flex;justify-content:space-between;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;margin:0 10px 12px}
+.tlt b{color:var(--ink);font-size:14px}
+.edplay{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.edgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:12px}
+.pt{background:var(--panel2);border-radius:14px;padding:12px}
+.pt label,.cuesbox label{display:block;font-weight:700;margin-bottom:8px}
+.nud{display:flex;align-items:center;gap:4px;margin-bottom:8px}
+.nud button{min-height:36px;padding:0 10px;border-radius:8px;background:#342a41;font-weight:600;font-size:13px}
+.nud output{flex:1;text-align:center;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.pt .acts button{min-height:36px;font-size:13px}
+.hypebox{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.hold{min-height:52px;padding:0 22px;border-radius:999px;background:#3b1527;border:2px solid var(--hype);color:#ffd2e2;font-weight:700;user-select:none;-webkit-user-select:none;touch-action:none}
+.hold.on{background:var(--hype);color:#fff;transform:scale(.97)}
+.cuesbox{background:var(--panel2);border-radius:14px;padding:12px;margin-bottom:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip{display:inline-flex;align-items:center;border:1px solid #5e4d1f;border-radius:999px;background:#2a230f;color:var(--cue);font-weight:600;font-size:13px}
+.chip button{min-height:32px;padding:0 10px}
+.chip button+button{padding:0 10px 0 2px;opacity:.7}
+.addcue{display:flex;gap:8px}
+.addcue input{flex:1}
+.edfoot{display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:-18px;background:var(--panel);padding:10px 0 4px}
+
+/* setup */
+#setup{position:fixed;inset:0;z-index:60;background:radial-gradient(1200px 600px at 80% -10%,#3a1630 0,transparent 60%),var(--bg);overflow:auto;display:flex;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 16px 40px}
+#setup[hidden]{display:none}
+.setup{max-width:520px;width:100%}
+.eq{display:flex;align-items:flex-end;gap:5px;height:64px;margin:16px 0 18px}
+.eq b{width:12px;border-radius:4px;background:var(--acc)}
+.eq b:nth-child(3n){background:var(--hype)}
+.setup h1{font-size:clamp(34px,8vw,48px)}
+.lede{color:var(--mute);font-size:17px;margin:8px 0 20px}
+.steps{padding-left:20px;margin:0 0 18px}
+.steps li{margin-bottom:12px}
+.copy{display:flex;gap:8px;align-items:center;margin-top:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 6px 6px 12px}
+.copy code{flex:1;overflow-wrap:anywhere;font-size:13px;color:var(--cue)}
+.warn{background:#3a1720;border:1px solid #7a2f44;color:#ffd0dc;border-radius:12px;padding:10px 12px;margin-bottom:14px}
+.warn[hidden]{display:none}
+.setup label{font-weight:700;display:block;margin-bottom:6px}
+.setup .pri{width:100%;min-height:50px;margin-top:12px;font-size:16px}
+
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 64px);transform:translateX(-50%);background:#f5f0fa;color:#120e18;padding:10px 16px;border-radius:12px;font-weight:600;z-index:80;max-width:min(92vw,520px);text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.4);transition:opacity .2s}
+#toast[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand"><i><b style="height:7px"></b><b style="height:14px"></b><b style="height:18px;background:var(--hype)"></b><b style="height:11px"></b></i>Party Cuts</div>
+    <button class="devbtn" data-p="dev" id="devbtn"></button>
+  </header>
+  <nav class="tabs" id="tabs">
+    <button data-tab="library">Library</button>
+    <button data-tab="search">Search</button>
+    <button data-tab="queue" class="tq">Queue</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+  <div class="body"><main id="main"></main><aside id="side"></aside></div>
+  <footer class="player" id="player">
+    <div class="bar" id="pbar"><div class="trk"><div class="hype"></div><div class="fill"></div><div class="cutL"></div><div class="cutR"></div></div><div class="cues"></div></div>
+    <div class="prow">
+      <div class="np"><img class="art" id="npArt" alt=""><div class="meta"><div class="t" id="npT">Nothing playing</div><div class="a" id="npA">Pick a playlist to start</div></div></div>
+      <div class="ctl" id="ctl"></div>
+      <div class="ext"><span class="time" id="npTime"></span><button class="chipbtn" data-p="full" id="bFull" title="Ignore cuts for this song">Full song</button><button class="ib" data-p="editnow" title="Edit cuts for this song" id="bEdit"></button></div>
+    </div>
+    <div class="jumps" id="jumps"></div>
+  </footer>
+</div>
+
+<div id="setup" hidden>
+  <div class="setup">
+    <div class="eq"><b style="height:30%"></b><b style="height:55%"></b><b style="height:80%"></b><b style="height:100%"></b><b style="height:62%"></b><b style="height:40%"></b><b style="height:72%"></b><b style="height:90%"></b><b style="height:48%"></b><b style="height:25%"></b></div>
+    <h1>Party Cuts</h1>
+    <p class="lede">Your Spotify, with every song starting and ending exactly where you want it to.</p>
+    <div class="warn" id="setupMsg" hidden></div>
+    <ol class="steps">
+      <li>Open <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>, log in and choose <b>Create app</b>.</li>
+      <li>Paste this as the <b>Redirect URI</b> (it must match exactly):
+        <div class="copy"><code id="ruri"></code><button class="btn" data-s="copyuri">Copy</button></div></li>
+      <li>Tick <b>Web API</b> and <b>Web Playback SDK</b>, save, then copy the app's <b>Client ID</b> and paste it below.</li>
+    </ol>
+    <label for="cid">Client ID</label>
+    <input id="cid" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="32 letters and numbers">
+    <button class="pri" data-s="login">Connect Spotify</button>
+    <p class="hint">Your Client ID and login stay on this device. Nothing is sent anywhere except Spotify.</p>
+  </div>
+</div>
+
+<div id="scrim" hidden><div id="sheet" role="dialog" aria-modal="true"></div></div>
+<div id="toast" hidden role="status"></div>
+
+<script>
+{
+/* ---------- basics ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LS = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k){ try { localStorage.removeItem(k); } catch {} }
+};
+const fmt = ms => { if (ms == null || isNaN(ms)) return '–'; const s = Math.floor(Math.max(0, ms) / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+const fmt1 = ms => fmt(ms) + '.' + Math.floor((Math.max(0, ms) % 1000) / 100);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const pct = (ms, d) => clamp(ms / (d || 1) * 100, 0, 100);
+const REDIRECT = location.origin + location.pathname;
+const MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const API = 'https://api.spotify.com/v1';
+const SCOPES = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing streaming playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read';
+const sv = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const IC = {
+  play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
+  pause: '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',
+  next: '<svg viewBox="0 0 24 24"><path d="M6 6l9 6-9 6zM16 6h2v12h-2z" fill="currentColor"/></svg>',
+  prev: '<svg viewBox="0 0 24 24"><path d="M18 6l-9 6 9 6zM6 6h2v12H6z" fill="currentColor"/></svg>',
+  shuf: sv('<path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>'),
+  rep: sv('<path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>'),
+  cut: sv('<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/>'),
+  more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg>',
+  spk: sv('<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><path d="M12 6h.01"/>'),
+  up: sv('<path d="M18 15l-6-6-6 6"/>'), down: sv('<path d="M6 9l6 6 6-6"/>'), x: sv('<path d="M18 6L6 18M6 6l12 12"/>'),
+  back: sv('<path d="M15 18l-6-6 6-6"/>'),
+  heart: '<svg viewBox="0 0 24 24"><path d="M12 21l-1.5-1.3C5 15 2 12.2 2 8.5 2 5.5 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.5 22 8.5c0 3.7-3 6.5-8.5 11.2z" fill="#fff"/></svg>',
+  note: sv('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>')
+};
+
+/* ---------- state ---------- */
+const S = {
+  cid: LS.get('pc.cid', ''), tok: LS.get('pc.tok', null), me: null,
+  trims: LS.get('pc.trims', {}),
+  set: Object.assign({ fade: 0, ignore: false, awake: true }, LS.get('pc.set', {})),
+  pls: null, cur: null, sr: [], srQ: '', srOff: 0, view: 'library',
+  list: [], orig: [], idx: -1, qn: 0, shuffle: false, repeat: false, src: '',
+  dev: null, devName: '', devVolOK: false, devVol: null, devs: [],
+  sdk: null, sdkId: null,
+  now: { id: null, pos: 0, base: 0, at: 0, dur: 0, playing: false },
+  inst: 0, cutDone: false, busyCut: false, fullKey: null, external: false,
+  holdUntil: 0, selfAt: 0, fading: false, fadeVol: null, resumeNeedsReplay: false,
+  editing: null, sheet: null, menu: null
+};
+Object.assign(S, (({list, orig, idx, qn, shuffle, repeat, src}) => ({list: list || [], orig: orig || [], idx: idx ?? -1, qn: qn || 0, shuffle: !!shuffle, repeat: !!repeat, src: src || ''}))(LS.get('pc.q', {})));
+const saveQ = () => LS.set('pc.q', { list: S.list, orig: S.orig, idx: S.idx, qn: S.qn, shuffle: S.shuffle, repeat: S.repeat, src: S.src });
+const saveTrims = () => LS.set('pc.trims', S.trims);
+const saveSet = () => LS.set('pc.set', S.set);
+const isSdk = () => !!S.sdkId && S.dev === S.sdkId;
+const same = (a, b) => !!a && !!b && (a.id === b.id || (a.uri && a.uri === b.uri) || (a.name === b.name && Math.abs((a.dur || 0) - (b.dur || 0)) < 3000));
+function trimFor(x){
+  if (!x || !x.id) return null;
+  if (S.trims[x.id]) return S.trims[x.id];
+  const c = S.list[S.idx];
+  return c && c.id !== x.id && same(c, x) ? S.trims[c.id] || null : null;
+}
+const hasCut = tr => !!tr && !!(tr.s || tr.e);
+
+/* ---------- toast / sheet ---------- */
+let toastT;
+function toast(msg, ms = 3200){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms); }
+function openSheet(html, kind){ S.sheet = kind; $('#sheet').innerHTML = html; $('#scrim').hidden = false; }
+function closeSheet(){ if (S.sheet === 'editor') return closeEditor(); S.sheet = null; $('#scrim').hidden = true; $('#sheet').innerHTML = ''; }
+
+/* ---------- auth (PKCE, no secret needed) ---------- */
+function rand(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); const c = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; return Array.from(a, b => c[b % 62]).join(''); }
+async function challenge(v){ const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)); return btoa(String.fromCharCode(...new Uint8Array(d))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function setupMsg(m){ const el = $('#setupMsg'); el.textContent = m || ''; el.hidden = !m; }
+function showSetup(msg){ $('#setup').hidden = false; $('#ruri').textContent = REDIRECT; $('#cid').value = S.cid || ''; setupMsg(msg);
+  if (location.protocol === 'file:') setupMsg('This page has to be opened from a web address, not as a file. Follow the setup guide to put it online (free), then open that address.');
+  else if (!window.isSecureContext) setupMsg('This page needs a secure (https) address. Use the GitHub Pages address from the setup guide.');
+}
+async function login(){
+  const cid = $('#cid').value.trim();
+  if (!/^[0-9a-f]{32}$/i.test(cid)) { setupMsg("That Client ID doesn't look right. It's 32 letters and numbers, shown on your app's page in the Spotify dashboard."); return; }
+  if (!window.isSecureContext || !crypto.subtle) { showSetup(); return; }
+  S.cid = cid; LS.set('pc.cid', cid);
+  const v = rand(64), st = rand(16); LS.set('pc.pkce', { v, st });
+  const p = new URLSearchParams({ client_id: cid, response_type: 'code', redirect_uri: REDIRECT, code_challenge_method: 'S256', code_challenge: await challenge(v), scope: SCOPES, state: st });
+  location.href = 'https://accounts.spotify.com/authorize?' + p;
+}
+async function tokenReq(params){
+  const r = await fetch('https://accounts.spotify.com/api/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(params) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error_description || j.error || 'Login failed'); e.auth = true; throw e; }
+  S.tok = { a: j.access_token, r: j.refresh_token || (S.tok && S.tok.r), x: Date.now() + (j.expires_in || 3600) * 1000 };
+  LS.set('pc.tok', S.tok);
+}
+async function handleRedirect(){
+  const q = new URLSearchParams(location.search);
+  if (!q.has('code') && !q.has('error')) return;
+  history.replaceState(null, '', REDIRECT);
+  if (q.has('error')) throw new Error('Spotify login was cancelled (' + q.get('error') + ').');
+  const pk = LS.get('pc.pkce', null);
+  if (!pk || pk.st !== q.get('state')) throw new Error('That login link expired. Tap Connect Spotify again.');
+  await tokenReq({ grant_type: 'authorization_code', code: q.get('code'), redirect_uri: REDIRECT, client_id: S.cid, code_verifier: pk.v });
+  LS.del('pc.pkce');
+}
+let refreshing = null;
+async function token(){
+  if (!S.tok) throw new Error('Not logged in');
+  if (Date.now() < S.tok.x - 60000) return S.tok.a;
+  if (!refreshing) refreshing = tokenReq({ grant_type: 'refresh_token', refresh_token: S.tok.r, client_id: S.cid }).finally(() => refreshing = null);
+  try { await refreshing; } catch (e) { if (e.auth) logout('Your Spotify login expired. Connect again.'); throw e; }
+  return S.tok.a;
+}
+function logout(msg){ S.tok = null; LS.del('pc.tok'); if (S.sdk) try { S.sdk.disconnect(); } catch {} showSetup(msg); }
+
+/* ---------- Spotify Web API ---------- */
+async function api(path, opt = {}, retry = true){
+  const t = await token();
+  const r = await fetch(path.startsWith('http') ? path : API + path, {
+    method: opt.method || 'GET',
+    headers: Object.assign({ Authorization: 'Bearer ' + t }, opt.body ? { 'Content-Type': 'application/json' } : {}),
+    body: opt.body ? JSON.stringify(opt.body) : undefined
+  });
+  if (r.status === 401 && retry) { S.tok.x = 0; return api(path, opt, false); }
+  if (r.status === 429 && retry) { await sleep((+r.headers.get('Retry-After') || 2) * 1000); return api(path, opt, false); }
+  if (r.status === 204 || r.status === 202) return null;
+  const txt = await r.text(); let j = null; try { j = txt ? JSON.parse(txt) : null; } catch {}
+  if (!r.ok) { const e = new Error((j && j.error && j.error.message) || ('Spotify error ' + r.status)); e.status = r.status; e.reason = j && j.error && j.error.reason; throw e; }
+  return j;
+}
+function handleErr(e){
+  console.warn(e);
+  const m = (e && e.message) || 'Something went wrong';
+  if (e && e.status === 404 && /device|active/i.test(m + (e.reason || ''))) { toast('Speaker not found. Open the Spotify app on your phone (or pick "This browser") and try again.', 5000); openDevices(); }
+  else if (e && e.status === 403 && /premium/i.test(m + (e.reason || ''))) toast('Spotify Premium is needed for playback.');
+  else if (e && e.status === 403) toast('Spotify refused that: ' + m, 5000);
+  else if (e && e.noDevice) {}
+  else toast(m, 4500);
+}
+const safe = fn => Promise.resolve().then(fn).catch(handleErr);
+const norm = t => ({ id: t.id, uri: t.uri, name: t.name, artists: (t.artists || []).map(a => a.name).join(', '), dur: t.duration_ms, img: pickImg(t.album && t.album.images) });
+function pickImg(imgs){ if (!imgs || !imgs.length) return ''; const s = imgs.slice().sort((a, b) => (a.width || 0) - (b.width || 0)); return (s.find(i => (i.width || 300) >= 64) || s[s.length - 1]).url; }
+const rel = u => u ? u.replace(API, '') : null;
+const owned = p => p && (p.collaborative || (S.me && p.owner && p.owner.id === S.me.id));
+
+async function loadPlaylists(){
+  let url = '/me/playlists?limit=50', out = [];
+  while (url && out.length < 600) { const j = await api(url); out.push(...(j.items || []).filter(Boolean)); url = rel(j.next); }
+  S.pls = out;
+}
+async function loadTracks(src, onProgress){
+  if (src.kind === 'cuts') return Object.entries(S.trims).filter(([, v]) => v.u).map(([id, v]) => ({ id, uri: v.u, name: v.n, artists: v.a, dur: v.d, img: v.i || '' }));
+  let url = src.kind === 'liked' ? '/me/tracks?limit=50' : `/playlists/${src.id}/items?limit=50`, out = [], first = true;
+  while (url && out.length < 3000) {
+    let j;
+    try { j = await api(url); }
+    catch (e) { if (first && src.kind === 'pl' && e.status === 404) { url = `/playlists/${src.id}/tracks?limit=50`; first = false; continue; } throw e; }
+    first = false;
+    for (const e of j.items || []) { const t = e && (e.item || e.track); if (t && t.id && t.uri && !t.is_local && t.type !== 'episode') out.push(norm(t)); }
+    url = rel(j.next); if (onProgress) onProgress(out.length);
+  }
+  return out;
+}
+
+/* ---------- player control (works for "this browser" and for the Spotify app on a phone) ---------- */
+const dq = (pre = '?') => S.dev ? pre + 'device_id=' + encodeURIComponent(S.dev) : '';
+function ensureDevice(){ if (!S.dev) { openDevices(); const e = new Error('Pick a speaker first'); e.noDevice = true; toast('Pick where the music should play first.'); throw e; } }
+async function pPlay(uris, pos){
+  const body = { uris, position_ms: Math.max(0, Math.round(pos || 0)) };
+  try { await api('/me/player/play' + dq(), { method: 'PUT', body }); }
+  catch (e) {
+    if (e.status === 404 && S.dev) { await api('/me/player', { method: 'PUT', body: { device_ids: [S.dev], play: false } }); await sleep(700); await api('/me/player/play' + dq(), { method: 'PUT', body }); }
+    else throw e;
+  }
+}
+async function pPause(){ if (isSdk()) return S.sdk.pause(); try { await api('/me/player/pause' + dq(), { method: 'PUT' }); } catch (e) { if (e.status !== 403) throw e; } }
+async function pResume(){ if (isSdk()) return S.sdk.resume(); await api('/me/player/play' + dq(), { method: 'PUT' }); }
+async function pSeek(ms){
+  ms = Math.max(0, Math.round(ms));
+  if (isSdk()) await S.sdk.seek(ms); else await api('/me/player/seek?position_ms=' + ms + dq('&'), { method: 'PUT' });
+  Object.assign(S.now, { pos: ms, base: ms, at: performance.now() });
+  const end = effEnd(); if (end == null || ms < end - 500) S.cutDone = false;
+  S.holdUntil = performance.now() + 1200;
+}
+async function pVol(v){ v = clamp(Math.round(v), 0, 100); if (isSdk()) return S.sdk.setVolume(v / 100); await api('/me/player/volume?volume_percent=' + v + dq('&'), { method: 'PUT' }); }
+const canFade = () => isSdk() || S.devVolOK;
+
+async function readState(){
+  if (isSdk()) {
+    const st = await S.sdk.getCurrentState(); if (!st || !st.track_window || !st.track_window.current_track) return null;
+    const c = st.track_window.current_track, lf = c.linked_from || {};
+    return { id: lf.id || c.id, uri: lf.uri || c.uri, name: c.name, artists: (c.artists || []).map(a => a.name).join(', '), img: pickImg(c.album && c.album.images), dur: st.duration || c.duration_ms, pos: st.position, playing: !st.paused };
+  }
+  const j = await api('/me/player');
+  if (!j || !j.item) return j ? { none: true, playing: false, dev: j.device } : null;
+  const t = norm(j.item);
+  return Object.assign(t, { pos: j.progress_ms || 0, playing: !!j.is_playing, dev: j.device });
+}
+
+/* ---------- the engine: watches playback and applies your cuts ---------- */
+let busy = false, lastPoll = 0;
+function effEnd(){
+  const n = S.now; if (!n.id) return null;
+  const tr = trimFor(n), ign = S.set.ignore || S.fullKey === S.inst;
+  if (!ign && tr && tr.e && tr.e < n.dur) return tr.e;
+  if (!S.external && S.list[S.idx] && (S.idx + 1 < S.list.length || S.repeat)) return n.dur - 450;
+  return null;
+}
+async function tick(){
+  if (!S.tok) return;
+  const t = performance.now(), sdk = isSdk();
+  const end = effEnd(), near = end != null && end - S.now.pos < 7000;
+  const every = sdk ? 250 : (S.now.playing ? (near ? 1000 : 2500) : 4000);
+  if (!busy && t - lastPoll >= every && (S.dev || !sdk)) {
+    busy = true; lastPoll = t;
+    try { applyState(await readState()); } catch (e) { if (!e.noDevice) console.warn('poll', e.message); }
+    finally { busy = false; }
+  } else if (S.now.id && S.now.playing) {
+    S.now.pos = Math.min(S.now.dur, S.now.base + (t - S.now.at));
+  }
+  drawProgress();
+  if (S.editing) drawEdLive();
+  enforce();
+}
+function applyState(st){
+  const t = performance.now();
+  if (!st) { if (S.now.playing) { S.now.playing = false; renderPlayer(); wake(false); } return; }
+  if (st.dev) { S.devVolOK = st.dev.supports_volume !== false; if (!S.fading) S.devVol = st.dev.volume_percent; }
+  if (st.none) { if (S.now.playing) { S.now.playing = false; renderPlayer(); } return; }
+  if (t < S.holdUntil && st.id !== S.now.id) return;
+  const changed = st.id !== S.now.id, pchg = st.playing !== S.now.playing;
+  if (t < S.holdUntil && !changed && Math.abs(st.pos - S.now.pos) > 2500) return;
+  Object.assign(S.now, { id: st.id, uri: st.uri, name: st.name, artists: st.artists, img: st.img, dur: st.dur, pos: st.pos, base: st.pos, at: t, playing: st.playing });
+  if (changed) onTrackChange(st);
+  if (changed || pchg) { renderPlayer(); wake(st.playing); markRows(); if (changed) renderSide(); }
+}
+function onTrackChange(st){
+  S.inst++; S.cutDone = false; S.fullKey = null;
+  if (S.fading) restoreVol();
+  const cur = S.list[S.idx];
+  if (cur && same(cur, st)) S.external = false;
+  else {
+    const j = S.list.findIndex((x, i) => i > S.idx && same(x, st));
+    if (j >= 0) { S.qn = Math.max(0, S.qn - (j - S.idx)); S.idx = j; S.external = false; saveQ(); }
+    else S.external = true;
+  }
+  if ((performance.now() - S.selfAt < 5000 && same(S.selfT, st)) || S.editing || S.set.ignore) return;
+  const tr = trimFor(st);
+  if (tr && tr.s && st.pos < tr.s - 200 && st.pos < 12000) safe(() => pSeek(tr.s));
+}
+function enforce(){
+  const n = S.now;
+  if (S.editing || !n.playing || !n.id || S.cutDone || S.busyCut) return;
+  const end = effEnd(); if (end == null) return;
+  const fade = (S.set.fade | 0) * 1000;
+  if (fade && canFade() && !S.fading && n.pos >= end - fade && n.pos < end - 200) startFade(end - n.pos);
+  if (n.pos >= end - (isSdk() ? 100 : 300)) {
+    S.cutDone = true; S.busyCut = true;
+    doCut().catch(handleErr).finally(() => S.busyCut = false);
+  }
+}
+async function doCut(){
+  if (S.external || !S.list[S.idx]) {
+    await api('/me/player/next' + dq(), { method: 'POST' });
+    lastPoll = 0; setTimeout(restoreVol, 500); return;
+  }
+  await next();
+}
+async function startFade(ms){
+  S.fading = true;
+  let v = S.devVol ?? 70;
+  if (isSdk()) try { v = Math.round((await S.sdk.getVolume()) * 100); } catch {}
+  S.fadeVol = v;
+  const steps = isSdk() ? 12 : 4;
+  for (let i = 1; i <= steps; i++) setTimeout(() => { if (S.fading) pVol(v * (1 - i / steps)).catch(() => {}); }, Math.max(0, ms * i / steps - 60));
+}
+function restoreVol(){ if (!S.fading) return; S.fading = false; if (S.fadeVol != null) pVol(S.fadeVol).catch(() => {}); }
+
+/* ---------- queue ---------- */
+function shuffleArr(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+async function playIdx(j, startAt){
+  const t = S.list[j]; if (!t) return;
+  ensureDevice();
+  const tr = S.trims[t.id];
+  const start = startAt != null ? startAt : ((!S.set.ignore && tr && tr.s) || 0);
+  const prevIdx = S.idx;
+  S.selfAt = performance.now(); S.selfT = t; S.holdUntil = S.selfAt + 2500;
+  try { S.idx = j; await pPlay(S.list.slice(j, j + 60).map(x => x.uri), start); }
+  catch (e) { S.idx = prevIdx; throw e; }
+  S.external = false; S.resumeNeedsReplay = false;
+  S.inst++; S.cutDone = false; S.fullKey = null;
+  Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, dur: t.dur, pos: start, base: start, at: performance.now(), playing: true });
+  S.holdUntil = performance.now() + 2500; lastPoll = performance.now() - 1200;
+  if (S.fading) setTimeout(restoreVol, isSdk() ? 150 : 400);
+  saveQ(); renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain(); wake(true);
+}
+async function playFrom(tracks, i, shuf, src){
+  if (!tracks || !tracks.length) return toast('No songs here yet.');
+  ensureDevice();
+  S.orig = tracks.slice(); let list = tracks.slice(), start = i || 0;
+  if (shuf) { const first = i != null ? list.splice(i, 1)[0] : null; shuffleArr(list); if (first) list.unshift(first); start = 0; }
+  S.list = list; S.qn = 0; S.shuffle = !!shuf; S.src = src || ''; S.idx = -1;
+  await playIdx(start);
+}
+async function next(){
+  if (S.external && !S.list.length) return api('/me/player/next' + dq(), { method: 'POST' });
+  if (!S.list.length) return;
+  let j = S.idx + 1;
+  if (j >= S.list.length) {
+    if (!S.repeat) { await pPause(); S.now.playing = false; restoreVol(); renderPlayer(); toast('That was the last song in the queue.'); return; }
+    if (S.shuffle) { S.list = shuffleArr(S.list.slice()); }
+    j = 0;
+  }
+  if (S.qn > 0) S.qn--;
+  await playIdx(j);
+}
+async function prev(){
+  const tr = trimFor(S.now), st = (!S.set.ignore && tr && tr.s) || 0;
+  if (!S.now.id) return;
+  if (S.now.pos - st > 4000 || S.idx <= 0 || S.external) return pSeek(st);
+  await playIdx(S.idx - 1);
+}
+async function togglePlay(){
+  if (S.now.playing) { await pPause(); S.now.playing = false; S.now.base = S.now.pos; renderPlayer(); wake(false); return; }
+  if (S.resumeNeedsReplay || !S.now.id) {
+    if (S.list.length) return playIdx(Math.max(0, S.idx));
+    return toast('Open a playlist and tap Play to start.');
+  }
+  ensureDevice();
+  await pResume(); S.now.playing = true; S.now.base = S.now.pos; S.now.at = performance.now(); S.holdUntil = performance.now() + 1500; renderPlayer(); wake(true);
+}
+function addQueue(t, nextUp){
+  if (!S.list.length || S.idx < 0) { S.list = [t]; S.orig = [t]; S.idx = 0; S.qn = 0; S.src = 'your queue'; saveQ(); renderSide(); return safe(() => playIdx(0)); }
+  const at = nextUp ? S.idx + 1 : S.idx + 1 + S.qn;
+  S.list.splice(at, 0, t); S.qn++;
+  saveQ(); renderSide(); if (S.view === 'queue') renderMain();
+  toast(nextUp ? 'Playing next: ' + t.name : 'Added to queue: ' + t.name, 2200);
+}
+function setShuffle(on){
+  S.shuffle = on;
+  const head = S.list.slice(0, S.idx + 1 + S.qn), rest = S.list.slice(S.idx + 1 + S.qn);
+  if (on) shuffleArr(rest);
+  else { const pos = new Map(S.orig.map((t, i) => [t.uri, i])); rest.sort((a, b) => (pos.get(a.uri) ?? 1e9) - (pos.get(b.uri) ?? 1e9)); }
+  S.list = head.concat(rest); saveQ(); renderPlayer(); renderSide(); if (S.view === 'queue') renderMain();
+}
+function qMove(i, d){
+  const j = i + d; if (i <= S.idx || j <= S.idx || j >= S.list.length) return;
+  [S.list[i], S.list[j]] = [S.list[j], S.list[i]]; saveQ(); renderSide(); if (S.view === 'queue') renderMain();
+}
+function qRemove(i){
+  if (i <= S.idx) return;
+  if (i <= S.idx + S.qn) S.qn--;
+  S.list.splice(i, 1); saveQ(); renderSide(); if (S.view === 'queue') renderMain();
+}
+function qClear(){ S.list.splice(S.idx + 1); S.qn = 0; saveQ(); renderSide(); if (S.view === 'queue') renderMain(); }
+async function jumpTo(i){ if (i === S.idx) return; if (i > S.idx) S.qn = Math.max(0, S.qn - (i - S.idx)); await playIdx(i); }
+
+/* ---------- devices ---------- */
+async function openDevices(){
+  openSheet(`<div class="sh"><h3>Where should the music play?</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+    <div class="mlist" id="devList"><p class="hint">Looking for speakers…</p></div>
+    <p class="hint">Don't see your phone? Open the Spotify app on it, play any song for a second, then tap Refresh.${MOBILE ? '' : ' "This browser" plays the music right here on this computer.'}</p>
+    <div class="row2"><button class="btn" data-d="refresh">Refresh</button></div>`, 'dev');
+  await listDevices();
+}
+async function listDevices(){
+  let ds = [];
+  try { ds = ((await api('/me/player/devices')) || {}).devices || []; } catch (e) { handleErr(e); }
+  if (S.sdkId && !ds.some(d => d.id === S.sdkId)) ds.unshift({ id: S.sdkId, name: 'This browser', type: 'Computer', supports_volume: true });
+  S.devs = ds;
+  const el = $('#devList'); if (!el) return;
+  el.innerHTML = ds.length ? ds.map(d => `<button data-d="${esc(d.id)}" class="${d.id === S.dev ? 'sel' : ''}">${IC.spk.replace('<svg', '<svg width="20" height="20"')}${esc(d.id === S.sdkId ? 'This browser' : d.name)}<small>${esc(d.type || '')}${d.is_active ? ' · active' : ''}${d.id === S.dev ? ' · selected' : ''}</small></button>`).join('')
+    : '<p class="hint">No speakers found yet.</p>';
+}
+async function pickDevice(id){
+  const d = S.devs.find(x => x.id === id); if (!d) return;
+  S.dev = id; S.devName = id === S.sdkId ? 'This browser' : d.name; S.devVolOK = d.supports_volume !== false;
+  LS.set('pc.dev', { id, name: S.devName, sdk: id === S.sdkId });
+  closeSheet(); renderTop();
+  try { await api('/me/player', { method: 'PUT', body: { device_ids: [id], play: !!S.now.playing } }); } catch (e) { console.warn(e); }
+  await sleep(500);
+  try { await api('/me/player/shuffle?state=false' + dq('&'), { method: 'PUT' }); await api('/me/player/repeat?state=off' + dq('&'), { method: 'PUT' }); } catch {}
+  toast('Playing on ' + S.devName, 2000);
+}
+async function autoPickDevice(){
+  if (S.dev) return;
+  try {
+    const ds = ((await api('/me/player/devices')) || {}).devices || [];
+    const d = ds.find(x => x.is_active) || (MOBILE && ds.find(x => /smartphone/i.test(x.type)));
+    if (d && !S.dev) { S.dev = d.id; S.devName = d.name; S.devVolOK = d.supports_volume !== false; LS.set('pc.dev', { id: d.id, name: d.name }); renderTop(); }
+  } catch {}
+}
+function loadSDK(){
+  if (MOBILE) return;
+  window.onSpotifyWebPlaybackSDKReady = () => {
+    const p = new Spotify.Player({ name: 'Party Cuts', getOAuthToken: cb => token().then(cb).catch(() => {}), volume: 0.8 });
+    p.addListener('ready', ({ device_id }) => {
+      S.sdkId = device_id;
+      const saved = LS.get('pc.dev', null);
+      if (!S.dev || (saved && saved.sdk)) { S.dev = device_id; S.devName = 'This browser'; LS.set('pc.dev', { id: device_id, name: 'This browser', sdk: true }); renderTop(); }
+    });
+    p.addListener('not_ready', ({ device_id }) => { if (S.dev === device_id) toast('The in-browser player went offline. Reload the page.'); });
+    p.addListener('authentication_error', () => toast('Spotify login problem. Try logging out and in again.'));
+    p.addListener('account_error', () => toast('Spotify Premium is needed to play in the browser.'));
+    p.addListener('initialization_error', e => console.warn('SDK', e));
+    p.addListener('player_state_changed', () => { lastPoll = 0; });
+    p.connect(); S.sdk = p;
+  };
+  const s = document.createElement('script'); s.src = 'https://sdk.scdn.co/spotify-player.js'; s.async = true; document.body.appendChild(s);
+}
+let activated = false;
+document.addEventListener('pointerdown', () => { if (S.sdk && !activated) { activated = true; try { S.sdk.activateElement(); } catch {} } }, true);
+
+/* ---------- keep the screen on during the party ---------- */
+let wl = null;
+async function wake(on){
+  try {
+    if (on && S.set.awake && !wl && 'wakeLock' in navigator && document.visibilityState === 'visible') { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => wl = null); }
+    else if (!on && wl) { await wl.release(); wl = null; }
+  } catch {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { lastPoll = 0; wake(S.now.playing); } });
+
+/* ---------- rendering ---------- */
+function renderTop(){
+  const b = $('#devbtn');
+  b.className = 'devbtn' + (S.dev ? ' set' : '');
+  b.innerHTML = IC.spk + '<span>' + esc(S.dev ? S.devName || 'Speaker' : 'Choose speaker') + '</span>';
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === S.view || (S.view === 'playlist' && x.dataset.tab === 'library')));
+}
+function cover(t, cls = 'art'){ return t.img ? `<img class="${cls}" src="${esc(t.img)}" alt="" loading="lazy">` : `<div class="${cls}" style="display:grid;place-items:center;color:var(--mute)">${IC.note.replace('<svg', '<svg width="20" height="20"')}</div>`; }
+function row(t, i, ctx, opts = {}){
+  const tr = S.trims[t.id];
+  const badge = hasCut(tr) ? `<span class="badge">${fmt(tr.s || 0)}–${fmt(tr.e || t.dur)}</span>` : (tr && tr.cues && tr.cues.length ? `<span class="badge c">${tr.cues.length} jump${tr.cues.length > 1 ? 's' : ''}</span>` : '');
+  const btns = opts.q
+    ? `<button class="ib" data-act="up" aria-label="Move up">${IC.up}</button><button class="ib" data-act="down" aria-label="Move down">${IC.down}</button><button class="ib" data-act="rm" aria-label="Remove">${IC.x}</button>`
+    : `<button class="ib" data-act="cut" aria-label="Edit cuts" title="Edit cuts">${IC.cut}</button><button class="ib" data-act="menu" aria-label="More options">${IC.more}</button>`;
+  return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div>${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div>`;
+}
+function markRows(){ document.querySelectorAll('.row').forEach(r => r.classList.toggle('on', !!S.now.id && r.dataset.id === S.now.id)); }
+function renderMain(){
+  renderTop();
+  const m = $('#main');
+  if (S.view === 'library') m.innerHTML = libraryHTML();
+  else if (S.view === 'playlist') m.innerHTML = playlistHTML();
+  else if (S.view === 'search') { m.innerHTML = searchHTML(); const i = $('#q'); if (i && !MOBILE) i.focus(); }
+  else if (S.view === 'queue') m.innerHTML = queueHTML();
+  else if (S.view === 'settings') m.innerHTML = settingsHTML();
+}
+function libraryHTML(){
+  const nCuts = Object.values(S.trims).filter(v => v.u).length;
+  let h = `<div class="libhead"><h2>Your library</h2><button class="btn" data-l="new">New playlist</button></div><div class="rows">
+    <button class="pl" data-l="liked"><div class="cov liked">${IC.heart}</div><div><b>Liked Songs</b><span>Songs you've saved</span></div></button>
+    <button class="pl" data-l="cuts"><div class="cov cuts">${IC.cut}</div><div><b>Songs with cuts</b><span>${nCuts} song${nCuts === 1 ? '' : 's'}</span></div></button>`;
+  if (!S.pls) h += '<p class="hint" style="padding:8px">Loading your playlists…</p>';
+  else h += S.pls.map(p => { const n = (p.items && p.items.total) ?? (p.tracks && p.tracks.total); const img = p.images && p.images[0] && p.images[0].url;
+    return `<button class="pl" data-l="pl:${esc(p.id)}">${img ? `<img class="cov" src="${esc(img)}" alt="" loading="lazy">` : `<div class="cov">${IC.note}</div>`}<div><b>${esc(p.name)}</b><span>${n != null ? n + ' songs · ' : ''}${owned(p) ? 'yours' : 'by ' + esc((p.owner && p.owner.display_name) || 'Spotify')}</span></div></button>`; }).join('');
+  return h + '</div>';
+}
+function playlistHTML(){
+  const c = S.cur; if (!c) return '';
+  const cuts = c.tracks ? c.tracks.filter(t => hasCut(S.trims[t.id])).length : 0;
+  let h = `<button class="back" data-l="back">${IC.back}Library</button><div class="plhead">${c.img ? `<img src="${esc(c.img)}" alt="">` : `<div class="cov ${c.kind === 'liked' ? 'liked' : c.kind === 'cuts' ? 'cuts' : ''}">${c.kind === 'liked' ? IC.heart : c.kind === 'cuts' ? IC.cut : IC.note}</div>`}
+    <div class="ttl"><h2>${esc(c.name)}</h2><span class="hint">${c.tracks ? c.tracks.length + ' songs · ' + cuts + ' with cuts' : 'Loading…'}</span></div>
+    <div class="acts"><button class="pri" data-l="playall">${IC.play.replace('<svg', '<svg width="18" height="18"')}Play</button><button class="btn" data-l="shuf">${IC.shuf.replace('<svg', '<svg width="18" height="18"')}Shuffle play</button></div></div>`;
+  if (c.blocked) h += `<div class="note">Spotify only lets apps like this read playlists you made or collaborate on. To use this one: in the Spotify app open it, tap ⋯ → <b>Add to other playlist</b> → <b>New playlist</b>, then open your copy here.</div>`;
+  else if (c.err) h += `<div class="note">${esc(c.err)}</div>`;
+  else if (!c.tracks) h += `<p class="hint" id="loadn">Loading songs…</p>`;
+  else if (!c.tracks.length) h += `<div class="empty"><h3>${c.kind === 'cuts' ? 'No cuts yet' : 'No songs'}</h3><p>${c.kind === 'cuts' ? 'Tap the scissors next to any song to set where it starts and ends.' : 'Add songs from Search.'}</p></div>`;
+  else h += '<div class="rows">' + c.tracks.map((t, i) => row(t, i, 'pl')).join('') + '</div>';
+  return h;
+}
+function searchHTML(){
+  return `<input type="search" id="q" placeholder="Search songs or artists" value="${esc(S.srQ)}" enterkeyhint="search" autocomplete="off">
+  <p class="hint">Tap a song to play it now, queue it, add it to a playlist or set its cuts.</p>
+  <div class="rows">${S.sr.map((t, i) => row(t, i, 'sr')).join('')}</div>
+  ${S.sr.length && S.sr.length % 10 === 0 ? '<button class="btn more" data-l="moresr">More results</button>' : ''}`;
+}
+function queueHTML(){
+  if (!S.list.length) return '<div class="empty"><h3>The queue is empty</h3><p>Open a playlist and tap Play or Shuffle play.</p></div>';
+  const cur = S.list[S.idx], qEnd = Math.min(S.list.length, S.idx + 1 + S.qn);
+  let h = `<h3 class="qh">Now playing${S.external && S.now.id ? ' (something else is playing in Spotify)' : ''}</h3>`;
+  if (cur) h += '<div class="rows">' + row(cur, S.idx, 'q', { nobtn: true }) + '</div>';
+  if (qEnd > S.idx + 1) h += `<h3 class="qh">Next in queue</h3><div class="rows">` + S.list.slice(S.idx + 1, qEnd).map((t, k) => row(t, S.idx + 1 + k, 'q', { q: true })).join('') + '</div>';
+  if (qEnd < S.list.length) h += `<h3 class="qh">Next from ${esc(S.src || 'your list')}<button data-l="qclear">Clear</button></h3><div class="rows">` + S.list.slice(qEnd, qEnd + 150).map((t, k) => row(t, qEnd + k, 'q', { q: true })).join('') + '</div>' + (S.list.length - qEnd > 150 ? `<p class="hint">…and ${S.list.length - qEnd - 150} more</p>` : '');
+  return h;
+}
+function renderSide(){ const a = $('#side'); if (getComputedStyle(a).display !== 'none') a.innerHTML = queueHTML(); }
+function settingsHTML(){
+  const n = Object.keys(S.trims).length;
+  return `<h2 style="margin-bottom:14px">Settings</h2>
+  <section class="card"><h3>Speaker</h3><p>Music plays on: <b style="color:var(--ink)">${esc(S.dev ? S.devName : 'not chosen yet')}</b></p><button class="btn" data-p="dev">Change speaker</button></section>
+  <section class="card"><h3>Cuts</h3>
+    <div class="opt"><span>Fade out at each cut</span><div class="seg">${[0, 1, 2, 3].map(v => `<button data-s="fade:${v}" class="${(S.set.fade | 0) === v ? 'on' : ''}">${v ? v + 's' : 'Off'}</button>`).join('')}</div></div>
+    <p class="hint">Fading works when music plays in this browser. Most phones don't let other apps change the Spotify app's volume, so on your phone the cut is instant.</p>
+    <label class="tog"><input type="checkbox" data-s="ignore" ${S.set.ignore ? 'checked' : ''}> Play every song in full (ignore all cuts)</label>
+    <label class="tog"><input type="checkbox" data-s="awake" ${S.set.awake ? 'checked' : ''}> Keep the screen on while music plays</label>
+  </section>
+  <section class="card"><h3>Move your cuts to another device</h3><p>${n} song${n === 1 ? ' has' : 's have'} cuts saved on this device. To use them on your phone (or Mac), download a backup here and import it there. Importing adds to what's already there.</p>
+    <div class="acts"><button class="btn" data-s="export">Download backup</button><label class="btn" style="cursor:pointer">Import backup<input type="file" id="imp" accept=".json,application/json" hidden></label></div></section>
+  <section class="card"><h3>Party-night checklist</h3><ul>
+    <li>Keep this page open and on screen. It's what makes songs start and stop at your points.</li>
+    <li>On your phone: plug in the charger. In phone Settings → Apps → Spotify → Battery, choose <b>Unrestricted</b> so Samsung doesn't pause it.</li>
+    <li>In the Spotify app: Settings → Playback → turn <b>Crossfade</b> off and <b>Normalize volume</b> on, so every song is about as loud as the next.</li>
+    <li>Do a 5-minute test run with your real speaker before guests arrive.</li></ul></section>
+  <section class="card"><h3>Account</h3><p>Logged in as <b style="color:var(--ink)">${esc(S.me ? S.me.display_name || S.me.id : '…')}</b></p><button class="btn" data-s="logout">Log out</button></section>`;
+}
+function renderPlayer(){
+  const n = S.now, tr = trimFor(n);
+  const art = $('#npArt'); if (n.img) { art.src = n.img; art.style.visibility = ''; } else { art.removeAttribute('src'); art.style.visibility = 'hidden'; }
+  $('#npT').textContent = n.id ? n.name : 'Nothing playing';
+  $('#npA').textContent = n.id ? n.artists : 'Pick a playlist to start';
+  $('#ctl').innerHTML = `<button class="ib${S.shuffle ? ' on' : ''}" data-p="shuf" aria-label="Shuffle" title="Shuffle">${IC.shuf}</button><button class="ib" data-p="prev" aria-label="Previous">${IC.prev}</button><button class="big" data-p="play" aria-label="${n.playing ? 'Pause' : 'Play'}">${n.playing ? IC.pause : IC.play}</button><button class="ib" data-p="next" aria-label="Next">${IC.next}</button><button class="ib${S.repeat ? ' on' : ''}" data-p="rep" aria-label="Repeat" title="Repeat the list">${IC.rep}</button>`;
+  $('#bEdit').innerHTML = IC.cut;
+  const full = $('#bFull'); full.classList.toggle('on', S.fullKey === S.inst && !!n.id); full.hidden = !hasCut(tr);
+  const ign = S.set.ignore || S.fullKey === S.inst;
+  paintBar($('#pbar'), n.dur, ign ? null : tr, tr);
+  $('#jumps').innerHTML = (tr && tr.cues || []).map((c, i) => `<button data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('');
+  drawProgress();
+}
+function paintBar(el, dur, cut, deco){
+  el.querySelector('.cutL').style.width = cut && cut.s ? pct(cut.s, dur) + '%' : '0';
+  el.querySelector('.cutR').style.width = cut && cut.e ? (100 - pct(cut.e, dur)) + '%' : '0';
+  el.querySelector('.hype').innerHTML = (deco && deco.hype || []).map(([a, b]) => `<i style="left:${pct(a, dur)}%;width:${pct(b - a, dur)}%"></i>`).join('');
+  el.querySelector('.cues').innerHTML = (deco && deco.cues || []).map(c => `<i style="left:${pct(c.t, dur)}%"></i>`).join('');
+}
+function drawProgress(){
+  const n = S.now;
+  $('#pbar .fill').style.width = n.id ? pct(n.pos, n.dur) + '%' : '0';
+  $('#npTime').textContent = n.id ? fmt(n.pos) + ' / ' + fmt(n.dur) : '';
+}
+
+/* ---------- views & loading ---------- */
+async function setView(v){ S.view = v; renderMain(); $('#main').scrollTop = 0; }
+async function openList(src){
+  const name = src.kind === 'liked' ? 'Liked Songs' : src.kind === 'cuts' ? 'Songs with cuts' : src.p.name;
+  const img = src.kind === 'pl' && src.p.images && src.p.images[0] && src.p.images[0].url;
+  S.cur = { kind: src.kind, id: src.p && src.p.id, name, img, own: src.kind === 'pl' && owned(src.p), tracks: null };
+  const me = S.cur;
+  await setView('playlist');
+  try {
+    me.tracks = await loadTracks({ kind: src.kind, id: me.id }, n => { const el = $('#loadn'); if (el) el.textContent = 'Loading songs… ' + n; });
+    if (src.kind === 'pl' && !me.tracks.length && !me.own && ((src.p.items && src.p.items.total) || (src.p.tracks && src.p.tracks.total))) me.blocked = true;
+  } catch (e) {
+    if (e.status === 403 || e.status === 404) me.blocked = !me.own; me.err = me.blocked ? null : e.message; me.tracks = me.tracks || [];
+  }
+  if (S.cur === me && S.view === 'playlist') renderMain();
+}
+let srT;
+async function doSearch(q, more){
+  q = q.trim(); S.srQ = q; if (!q) { S.sr = []; renderMain(); return; }
+  if (!more) S.srOff = 0;
+  try {
+    const j = await api('/search?type=track&limit=10&offset=' + S.srOff + '&q=' + encodeURIComponent(q));
+    const items = ((j && j.tracks && j.tracks.items) || []).filter(Boolean).map(norm);
+    S.sr = more ? S.sr.concat(items) : items; S.srOff += 10;
+    if (S.view === 'search') { const m = $('#main'); const y = m.scrollTop; m.querySelector('.rows').innerHTML = S.sr.map((t, i) => row(t, i, 'sr')).join(''); const mb = m.querySelector('.more'); if (mb) mb.remove(); if (items.length === 10) m.insertAdjacentHTML('beforeend', '<button class="btn more" data-l="moresr">More results</button>'); m.scrollTop = y; }
+  } catch (e) { handleErr(e); }
+}
+const listFor = ctx => ctx === 'pl' ? (S.cur && S.cur.tracks) || [] : ctx === 'sr' ? S.sr : S.list;
+
+/* ---------- menus ---------- */
+function openMenu(ctx, i){
+  const t = listFor(ctx)[i]; if (!t) return;
+  S.menu = { ctx, i, t };
+  const canRm = ctx === 'pl' && S.cur && S.cur.kind === 'pl' && S.cur.own;
+  openSheet(`<div class="sh">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+  <div class="mlist">
+    <button data-m="playnow">Play now</button>
+    <button data-m="next">Play next</button>
+    <button data-m="queue">Add to queue</button>
+    <button data-m="cut">Set start, end and jump points</button>
+    <button data-m="add">Add to a playlist</button>
+    ${canRm ? '<button data-m="remove">Remove from this playlist</button>' : ''}
+    ${S.trims[t.id] ? '<button data-m="clear">Delete this song\'s cuts</button>' : ''}
+  </div>`, 'menu');
+}
+async function menuAct(a){
+  const { ctx, i, t } = S.menu || {}; if (!t) return;
+  closeSheet();
+  if (a === 'playnow') {
+    if (ctx === 'pl') return playFrom(S.cur.tracks, i, false, S.cur.name);
+    if (ctx === 'q') return jumpTo(i);
+    if (!S.list.length || S.idx < 0) return playFrom([t], 0, false, 'Search');
+    S.list.splice(S.idx + 1, 0, t); return playIdx(S.idx + 1);
+  }
+  if (a === 'next') return addQueue(t, true);
+  if (a === 'queue') return addQueue(t, false);
+  if (a === 'cut') return openEditor(t);
+  if (a === 'add') return openAddTo(t);
+  if (a === 'clear') { delete S.trims[t.id]; saveTrims(); refreshAfterTrim(); return toast('Cuts deleted'); }
+  if (a === 'remove') {
+    const pid = S.cur.id;
+    try { await api(`/playlists/${pid}/items`, { method: 'DELETE', body: { items: [{ uri: t.uri }] } }); }
+    catch (e) { if (e.status === 400 || e.status === 404) await api(`/playlists/${pid}/tracks`, { method: 'DELETE', body: { tracks: [{ uri: t.uri }] } }); else throw e; }
+    if (S.cur && S.cur.id === pid) { S.cur.tracks = S.cur.tracks.filter(x => x.uri !== t.uri); renderMain(); }
+    toast('Removed from ' + S.cur.name);
+  }
+}
+function openAddTo(t){
+  S.addT = t;
+  const own = (S.pls || []).filter(owned);
+  openSheet(`<div class="sh"><h3>Add “${esc(t.name)}” to…</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+    <div class="row2"><input id="npName" placeholder="New playlist name" maxlength="80"><button class="pri" data-a="new">Create</button></div>
+    <div class="mlist">${own.map(p => `<button data-a="${esc(p.id)}">${esc(p.name)}</button>`).join('') || '<p class="hint">You have no playlists yet. Create one above.</p>'}</div>`, 'add');
+}
+async function addTo(pid){
+  const t = S.addT; if (!t) return;
+  let p = (S.pls || []).find(x => x.id === pid);
+  if (pid === 'new') {
+    const name = ($('#npName').value || '').trim(); if (!name) return toast('Type a name for the new playlist.');
+    p = await api('/me/playlists', { method: 'POST', body: { name, public: false, description: 'Made with Party Cuts' } });
+    S.pls = [p].concat(S.pls || []);
+  }
+  closeSheet();
+  try { await api(`/playlists/${p.id}/items`, { method: 'POST', body: { uris: [t.uri] } }); }
+  catch (e) { if (e.status === 404) await api(`/playlists/${p.id}/tracks`, { method: 'POST', body: { uris: [t.uri] } }); else throw e; }
+  toast('Added to ' + p.name);
+  if (S.cur && S.cur.id === p.id && S.cur.tracks) { S.cur.tracks.push(t); if (S.view === 'playlist') renderMain(); }
+}
+function newPlaylistSheet(){
+  openSheet(`<div class="sh"><h3>New playlist</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+  <div class="row2"><input id="npName2" placeholder="Playlist name" maxlength="80"><button class="pri" data-l="create">Create</button></div>
+  <p class="hint">It's created in your Spotify account as a private playlist. Add songs from Search.</p>`, 'new');
+  setTimeout(() => { const i = $('#npName2'); if (i) i.focus(); }, 50);
+}
+
+/* ---------- cut editor ---------- */
+function openEditor(t){
+  const d = JSON.parse(JSON.stringify(S.trims[t.id] || {}));
+  d.cues = d.cues || []; d.hype = d.hype || [];
+  S.editing = { t, d, previewed: false, lastPos: same(S.now, t) && S.now.id ? S.now.pos : (d.s || 0), hold: null, stopAt: null, drag: null };
+  openSheet(`<div class="edh">${cover(t)}<div class="meta"><b>${esc(t.name)}</b><span>${esc(t.artists)} · ${fmt(t.dur)}</span></div><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+  <p class="hint">Plays on: ${esc(S.dev ? S.devName : 'no speaker chosen')}. Tap the bar to listen from any spot. Drag the orange handles to set where the song starts and ends.</p>
+  <div class="tl" id="tl"><div class="hype"></div><div class="cutL"></div><div class="cutR"></div><div class="cues"></div><div class="ph" id="ph"></div><div class="hd" data-h="s" id="hs"><span>START</span></div><div class="hd" data-h="e" id="he"><span>END</span></div></div>
+  <div class="tlt"><span>0:00</span><b id="edPos">0:00.0</b><span>${fmt(t.dur)}</span></div>
+  <div class="edplay"><button class="btn" data-e="pstart">${IC.play.replace('<svg', '<svg width="16" height="16"')}Play from start point</button><button class="btn" data-e="pend">Hear the ending</button><button class="btn" data-e="pause">Pause</button></div>
+  <div class="edgrid">
+    <div class="pt"><label>Start</label><div class="nud"><button data-e="s:-5">−5s</button><button data-e="s:-1">−1s</button><output id="edS"></output><button data-e="s:1">+1s</button><button data-e="s:5">+5s</button></div><div class="acts"><button class="btn" data-e="snow">Set to where it's playing</button><button class="btn" data-e="sclr">From the beginning</button></div></div>
+    <div class="pt"><label>End</label><div class="nud"><button data-e="e:-5">−5s</button><button data-e="e:-1">−1s</button><output id="edE"></output><button data-e="e:1">+1s</button><button data-e="e:5">+5s</button></div><div class="acts"><button class="btn" data-e="enow">Set to where it's playing</button><button class="btn" data-e="eclr">To the very end</button></div></div>
+  </div>
+  <div class="hypebox"><button class="hold" id="hold">Hold while it's hype</button><button class="btn" data-e="hclr">Clear hype map</button></div>
+  <p class="hint" style="margin-top:-6px">While the song plays, hold the pink button during the loud, exciting parts. They're drawn on the bar so you can see the song's shape at a glance.</p>
+  <div class="cuesbox"><label>Jump points</label><div class="chips" id="edCues"></div>
+    <div class="addcue"><input id="cueName" placeholder="Name, e.g. Drop" maxlength="16"><button class="btn" data-e="cadd">Add at current spot</button></div>
+    <p class="hint">Jump points show as buttons under the player so you can skip straight to the drop during the party.</p></div>
+  <div class="edfoot"><button class="btn" data-e="cancel">Cancel</button><button class="pri" data-e="save">Save</button></div>`, 'editor');
+  drawEd(); bindEditor();
+}
+function edPos(){ const ed = S.editing; return ed && S.now.id && same(S.now, ed.t) ? S.now.pos : (ed ? ed.lastPos : 0); }
+function drawEd(){
+  const ed = S.editing; if (!ed) return; const { t, d } = ed, tl = $('#tl'); if (!tl) return;
+  paintBar(tl, t.dur, d, d);
+  tl.querySelector('.cues').innerHTML = d.cues.map(c => `<i style="left:${pct(c.t, t.dur)}%"><span>${esc(c.l)}</span></i>`).join('');
+  $('#hs').style.left = pct(d.s || 0, t.dur) + '%'; $('#hs').classList.toggle('flip', pct(d.s || 0, t.dur) < 10);
+  $('#he').style.left = pct(d.e || t.dur, t.dur) + '%'; $('#he').classList.toggle('flip', pct(d.e || t.dur, t.dur) <= 90);
+  $('#edS').textContent = fmt1(d.s || 0);
+  $('#edE').textContent = fmt1(d.e || t.dur);
+  $('#edCues').innerHTML = d.cues.map((c, i) => `<span class="chip"><button data-e="cgo:${i}">${esc(c.l)} · ${fmt(c.t)}</button><button data-e="cdel:${i}" aria-label="Delete jump point">✕</button></span>`).join('') || '<span class="hint">None yet.</span>';
+  drawEdLive();
+}
+function drawEdLive(){
+  const ed = S.editing; if (!ed) return; const ph = $('#ph'); if (!ph) return;
+  const p = edPos();
+  ph.style.left = pct(p, ed.t.dur) + '%';
+  $('#edPos').textContent = fmt1(p);
+  const hy = $('#tl .hype'); let live = hy.querySelector('.live');
+  if (ed.hold) { if (!live) { live = document.createElement('i'); live.className = 'live'; hy.appendChild(live); } const a = ed.hold.from, b = Math.min(ed.t.dur, a + performance.now() - ed.hold.t0); live.style.left = pct(a, ed.t.dur) + '%'; live.style.width = pct(b - a, ed.t.dur) + '%'; }
+  else if (live) live.remove();
+  if (ed.stopAt != null && S.now.playing && same(S.now, ed.t) && p >= ed.stopAt) { ed.stopAt = null; S.now.playing = false; safe(pPause); renderPlayer(); }
+}
+async function edSeek(ms, stopAt){
+  const ed = S.editing; if (!ed) return;
+  ms = clamp(Math.round(ms), 0, ed.t.dur - 500); ed.lastPos = ms; ed.stopAt = stopAt ?? null;
+  if (S.now.id && same(S.now, ed.t)) {
+    await pSeek(ms);
+    if (!S.now.playing) { await pResume(); S.now.playing = true; S.now.at = performance.now(); renderPlayer(); }
+  } else {
+    ensureDevice();
+    S.selfAt = performance.now(); S.selfT = ed.t; S.holdUntil = S.selfAt + 2500;
+    await pPlay([ed.t.uri], ms);
+    ed.previewed = true; S.resumeNeedsReplay = true; S.inst++;
+    const t = ed.t;
+    Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, dur: t.dur, pos: ms, base: ms, at: performance.now(), playing: true });
+    renderPlayer();
+  }
+}
+let edDeb;
+const edPreview = fn => { clearTimeout(edDeb); edDeb = setTimeout(() => safe(fn), 450); };
+function bindEditor(){
+  const tl = $('#tl'), hold = $('#hold');
+  const msAt = e => { const r = tl.getBoundingClientRect(); return clamp((e.clientX - r.left) / r.width, 0, 1) * S.editing.t.dur; };
+  tl.addEventListener('pointerdown', e => {
+    const ed = S.editing; const h = e.target.closest('.hd');
+    if (h) { ed.drag = h.dataset.h; tl.setPointerCapture(e.pointerId); e.preventDefault(); return; }
+    safe(() => edSeek(msAt(e)));
+  });
+  tl.addEventListener('pointermove', e => {
+    const ed = S.editing; if (!ed || !ed.drag) return; const { d, t } = ed, v = msAt(e);
+    if (ed.drag === 's') d.s = v < 400 ? 0 : clamp(v, 0, (d.e || t.dur) - 2000);
+    else d.e = v > t.dur - 400 ? 0 : clamp(v, (d.s || 0) + 2000, t.dur);
+    drawEd();
+  });
+  const endDrag = () => { const ed = S.editing; if (!ed || !ed.drag) return; const { d, t } = ed, which = ed.drag; ed.drag = null;
+    if (which === 's') edPreview(() => edSeek(d.s || 0)); else edPreview(() => edSeek(Math.max(0, (d.e || t.dur) - 6000), d.e || null)); };
+  tl.addEventListener('pointerup', endDrag); tl.addEventListener('pointercancel', endDrag);
+  const hDown = e => { e.preventDefault(); const ed = S.editing; if (!S.now.playing || !same(S.now, ed.t)) { toast('Play the song first, then hold the button during the hype parts.'); return; } ed.hold = { from: edPos(), t0: performance.now() }; hold.classList.add('on'); try { hold.setPointerCapture(e.pointerId); } catch {} };
+  const hUp = () => { const ed = S.editing; if (!ed || ed.hold == null) return; const a = ed.hold.from, b = Math.min(ed.t.dur, a + performance.now() - ed.hold.t0); ed.hold = null; hold.classList.remove('on');
+    if (b - a > 250) { const hs = ed.d.hype.concat([[Math.round(a), Math.round(b)]]).sort((x, y) => x[0] - y[0]), out = [];
+      for (const r of hs) { const l = out[out.length - 1]; if (l && r[0] <= l[1] + 500) l[1] = Math.max(l[1], r[1]); else out.push(r.slice()); }
+      ed.d.hype = out; } drawEd(); };
+  hold.addEventListener('pointerdown', hDown); hold.addEventListener('pointerup', hUp); hold.addEventListener('pointercancel', hUp);
+  hold.addEventListener('contextmenu', e => e.preventDefault());
+}
+function edAct(a){
+  const ed = S.editing; if (!ed) return; const { d, t } = ed;
+  const [k, arg] = a.split(':');
+  if (k === 'pstart') return safe(() => edSeek(d.s || 0));
+  if (k === 'pend') return safe(() => edSeek(Math.max(0, (d.e || t.dur) - 8000), d.e || null));
+  if (k === 'pause') { ed.stopAt = null; S.now.playing = false; renderPlayer(); return safe(pPause); }
+  if (k === 's') { d.s = clamp((d.s || 0) + (+arg) * 1000, 0, (d.e || t.dur) - 2000); if (d.s < 200) d.s = 0; drawEd(); return edPreview(() => edSeek(d.s || 0)); }
+  if (k === 'e') { d.e = clamp((d.e || t.dur) + (+arg) * 1000, (d.s || 0) + 2000, t.dur); if (d.e > t.dur - 200) d.e = 0; drawEd(); return edPreview(() => edSeek(Math.max(0, (d.e || t.dur) - 5000), d.e || null)); }
+  if (k === 'snow') { const p = edPos(); if (p >= (d.e || t.dur) - 2000) return toast('The start has to be before the end.'); d.s = p < 200 ? 0 : Math.round(p); return drawEd(); }
+  if (k === 'enow') { const p = edPos(); if (p <= (d.s || 0) + 2000) return toast('The end has to be after the start.'); d.e = Math.round(p); return drawEd(); }
+  if (k === 'sclr') { d.s = 0; return drawEd(); }
+  if (k === 'eclr') { d.e = 0; return drawEd(); }
+  if (k === 'hclr') { d.hype = []; return drawEd(); }
+  if (k === 'cadd') { if (d.cues.length >= 8) return toast('Up to 8 jump points per song.'); const i = $('#cueName'); const l = (i.value || '').trim() || 'Jump ' + (d.cues.length + 1); d.cues.push({ t: Math.round(edPos()), l }); d.cues.sort((x, y) => x.t - y.t); i.value = ''; return drawEd(); }
+  if (k === 'cgo') return safe(() => edSeek(d.cues[+arg].t));
+  if (k === 'cdel') { d.cues.splice(+arg, 1); return drawEd(); }
+  if (k === 'cancel') return closeEditor();
+  if (k === 'save') {
+    const o = {}; if (d.s) o.s = Math.round(d.s); if (d.e) o.e = Math.round(d.e); if (d.cues.length) o.cues = d.cues; if (d.hype.length) o.hype = d.hype;
+    if (Object.keys(o).length) S.trims[t.id] = Object.assign(o, { u: t.uri, n: t.name, a: t.artists, d: t.dur, i: t.img });
+    else delete S.trims[t.id];
+    saveTrims(); closeEditor(); refreshAfterTrim(); toast(Object.keys(o).length ? 'Saved' : 'Cuts removed for this song', 1800);
+  }
+}
+function closeEditor(){
+  const ed = S.editing; S.editing = null; S.sheet = null; $('#scrim').hidden = true; $('#sheet').innerHTML = '';
+  if (ed && ed.previewed && S.now.playing) { S.now.playing = false; safe(pPause); }
+  if (ed && ed.previewed) S.external = !(S.list[S.idx] && same(S.list[S.idx], S.now));
+  S.cutDone = false; renderPlayer();
+}
+function refreshAfterTrim(){ renderPlayer(); if (['playlist', 'library', 'search', 'queue'].includes(S.view)) renderMain(); renderSide(); }
+
+/* ---------- backup ---------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify({ app: 'party-cuts', v: 1, saved: new Date().toISOString(), trims: S.trims }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'party-cuts-backup.json'; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  toast('Backup downloaded. Send the file to your other device and import it there.', 4500);
+}
+async function importData(file){
+  try {
+    const j = JSON.parse(await file.text());
+    if (!j || typeof j.trims !== 'object') throw new Error();
+    let n = 0; for (const [id, v] of Object.entries(j.trims)) { if (v && typeof v === 'object') { S.trims[id] = v; n++; } }
+    saveTrims(); refreshAfterTrim(); renderMain(); toast('Imported cuts for ' + n + ' song' + (n === 1 ? '' : 's') + '.');
+  } catch { toast("That file isn't a Party Cuts backup."); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-tab],[data-p],[data-l],[data-act],[data-m],[data-d],[data-e],[data-s],[data-a],[data-x],.row');
+  if (!el) { if (e.target.id === 'scrim') closeSheet(); return; }
+  const ds = el.dataset;
+  if (ds.x) return closeSheet();
+  if (ds.tab) return setView(ds.tab);
+  if (ds.e) return edAct(ds.e);
+  if (ds.m) return safe(() => menuAct(ds.m));
+  if (ds.a) return safe(() => addTo(ds.a));
+  if (ds.d) return ds.d === 'refresh' ? listDevices() : safe(() => pickDevice(ds.d));
+  if (ds.p) {
+    const [k, arg] = ds.p.split(':');
+    if (k === 'dev') return openDevices();
+    if (k === 'play') return safe(togglePlay);
+    if (k === 'next') return safe(next);
+    if (k === 'prev') return safe(prev);
+    if (k === 'shuf') return setShuffle(!S.shuffle);
+    if (k === 'rep') { S.repeat = !S.repeat; saveQ(); renderPlayer(); return toast(S.repeat ? 'The list will start again at the end' : 'Stop at the end of the list', 1800); }
+    if (k === 'full') { S.fullKey = S.fullKey === S.inst ? null : S.inst; renderPlayer(); return toast(S.fullKey ? 'Playing this song in full' : 'Cuts back on for this song', 1800); }
+    if (k === 'editnow') { if (!S.now.id) return toast('Nothing is playing.'); const t = S.list[S.idx] && same(S.list[S.idx], S.now) ? S.list[S.idx] : { id: S.now.id, uri: S.now.uri, name: S.now.name, artists: S.now.artists, dur: S.now.dur, img: S.now.img }; return openEditor(t); }
+    if (k === 'jump') { const tr = trimFor(S.now); if (tr && tr.cues[+arg]) return safe(() => pSeek(tr.cues[+arg].t)); }
+    return;
+  }
+  if (ds.s) {
+    const [k, arg] = ds.s.split(':');
+    if (k === 'login') return login();
+    if (k === 'copyuri') { navigator.clipboard && navigator.clipboard.writeText(REDIRECT).then(() => toast('Copied'), () => toast('Select the address and copy it')); return; }
+    if (k === 'fade') { S.set.fade = +arg; saveSet(); return renderMain(); }
+    if (k === 'export') return exportData();
+    if (k === 'logout') return logout();
+    return;
+  }
+  if (ds.l) {
+    const [k, ...rest] = ds.l.split(':'); const arg = rest.join(':');
+    if (k === 'liked') return openList({ kind: 'liked' });
+    if (k === 'cuts') return openList({ kind: 'cuts' });
+    if (k === 'pl') { const p = (S.pls || []).find(x => x.id === arg); if (p) return openList({ kind: 'pl', p }); return; }
+    if (k === 'back') return setView('library');
+    if (k === 'playall') return safe(() => playFrom(S.cur.tracks, 0, false, S.cur.name));
+    if (k === 'shuf') return safe(() => playFrom(S.cur.tracks, null, true, S.cur.name));
+    if (k === 'new') return newPlaylistSheet();
+    if (k === 'create') return safe(async () => { const name = ($('#npName2').value || '').trim(); if (!name) return toast('Type a name first.'); const p = await api('/me/playlists', { method: 'POST', body: { name, public: false, description: 'Made with Party Cuts' } }); S.pls = [p].concat(S.pls || []); closeSheet(); if (S.view === 'library') renderMain(); toast('Created ' + name); });
+    if (k === 'moresr') return doSearch(S.srQ, true);
+    if (k === 'qclear') return qClear();
+    return;
+  }
+  const r = el.closest('.row'); if (!r) return;
+  const ctx = r.dataset.ctx, i = +r.dataset.i, t = listFor(ctx)[i]; if (!t) return;
+  if (ds.act === 'cut') return openEditor(t);
+  if (ds.act === 'menu') return openMenu(ctx, i);
+  if (ds.act === 'up') return qMove(i, -1);
+  if (ds.act === 'down') return qMove(i, 1);
+  if (ds.act === 'rm') return qRemove(i);
+  if (ctx === 'pl') return safe(() => playFrom(S.cur.tracks, i, false, S.cur.name));
+  if (ctx === 'q') return safe(() => jumpTo(i));
+  return openMenu(ctx, i);
+});
+document.addEventListener('input', e => { if (e.target.id === 'q') { clearTimeout(srT); srT = setTimeout(() => doSearch(e.target.value), 400); } });
+document.addEventListener('keydown', e => {
+  if (e.target.id === 'q' && e.key === 'Enter') { clearTimeout(srT); doSearch(e.target.value); e.target.blur(); }
+  if (e.target.id === 'cid' && e.key === 'Enter') login();
+  if (e.key === 'Escape' && S.sheet) closeSheet();
+  if (e.key === ' ' && !/INPUT|TEXTAREA|BUTTON/.test(e.target.tagName) && !S.sheet && S.tok) { e.preventDefault(); safe(togglePlay); }
+});
+document.addEventListener('change', e => {
+  const s = e.target.dataset && e.target.dataset.s;
+  if (s === 'ignore') { S.set.ignore = e.target.checked; saveSet(); renderPlayer(); }
+  if (s === 'awake') { S.set.awake = e.target.checked; saveSet(); wake(S.now.playing && S.set.awake); }
+  if (e.target.id === 'imp' && e.target.files[0]) importData(e.target.files[0]);
+});
+$('#pbar').addEventListener('click', e => { if (!S.now.id) return; const r = e.currentTarget.getBoundingClientRect(); safe(() => pSeek(clamp((e.clientX - r.left) / r.width, 0, 1) * S.now.dur)); });
+window.addEventListener('resize', () => renderSide());
+
+/* ---------- start ---------- */
+async function boot(){
+  renderTop(); renderPlayer(); renderSide();
+  try { await handleRedirect(); } catch (e) { showSetup(e.message); return; }
+  if (!S.tok) { showSetup(); return; }
+  $('#setup').hidden = true;
+  try { S.me = await api('/me'); }
+  catch (e) {
+    if (e.status === 403) return showSetup('Spotify refused access. In the developer dashboard open your app → User Management and add the email of your Spotify account, then connect again.');
+    if (!S.tok) return;
+    toast('Could not reach Spotify. Check your internet.', 5000);
+  }
+  const dv = LS.get('pc.dev', null);
+  if (dv && !dv.sdk) { S.dev = dv.id; S.devName = dv.name; }
+  renderMain();
+  loadSDK();
+  autoPickDevice();
+  loadPlaylists().then(() => { if (S.view === 'library') renderMain(); }).catch(handleErr);
+  setInterval(tick, 250);
+}
+boot();
+}
+</script>
+</body>
+</html>
