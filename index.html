@@ -147,12 +147,23 @@ aside{display:none}
 .modes button.on{background:var(--ink);color:var(--bg)}
 body[data-mode=edit] .modes button.on{background:var(--acc);color:#1b0f08}
 @media(max-width:480px){.brand .bt{display:none}.modes button{padding:0 11px}}
-#etl,#etlt,#edpanel{display:none}
-body[data-mode=edit] #pbar,body[data-mode=edit] #jumps,body[data-mode=edit] #bFull{display:none}
-body[data-mode=edit] #etl{display:block}
-body[data-mode=edit] #etlt{display:flex}
-body[data-mode=edit] #edpanel{display:block}
-body[data-mode=edit] .player{border-top:2px solid var(--acc)}
+#editor{display:none}
+body[data-mode=edit] #editor{display:block}
+body[data-mode=edit] #jumps,body[data-mode=edit] #bFull{display:none}
+body[data-mode=edit]:not(.edside) #pbar{display:none}
+body[data-mode=edit]:not(.edside) .player{border-top:2px solid var(--acc)}
+body.edside[data-mode=edit] #qside{display:none}
+body.edside[data-mode=edit] aside{border-left:2px solid var(--acc)}
+@media(min-width:1000px){body[data-mode=edit] .body{grid-template-columns:minmax(0,1fr) 440px}}
+.edhead{display:none}
+.edside .edhead{display:flex;gap:12px;align-items:center;margin-bottom:4px}
+.edhead .art{width:52px;height:52px}
+.edhead small{display:block;color:var(--acc);font-weight:800;font-size:12px}
+.edhead b{display:block;font-family:var(--head);font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edhead span{display:block;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edside #edpanel{max-height:none;overflow:visible;border-top:0;margin-top:2px}
+.edside .tl{margin-left:4px;margin-right:4px}
+.edside .tlt{margin-left:4px;margin-right:4px}
 
 /* jump points inside song rows */
 .rj{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
@@ -172,14 +183,14 @@ body[data-mode=edit] .player{border-top:2px solid var(--acc)}
 .hd::before{content:"";position:absolute;top:22px;bottom:0;width:4px;border-radius:2px;background:var(--acc)}
 .hd span{position:absolute;top:0;right:12px;font-size:11px;font-weight:800;letter-spacing:.02em;background:var(--acc);color:#1b0f08;border-radius:6px;padding:2px 6px;white-space:nowrap}
 .hd.flip span{right:auto;left:12px}
-.tlt{justify-content:space-between;align-items:center;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;margin:0 12px 4px}
+.tlt{display:flex;justify-content:space-between;align-items:center;color:var(--mute);font-size:12px;font-variant-numeric:tabular-nums;margin:0 12px 4px}
 .tlt b{color:var(--ink);font-size:14px}
 .saved{color:var(--ok);font-weight:700;font-size:12px;margin-left:6px;opacity:0;transition:opacity .3s}
 .saved.on{opacity:1}
 #edpanel{max-height:40dvh;overflow:auto;padding:10px 0 2px;border-top:1px solid var(--line);margin-top:8px;overscroll-behavior:contain}
 @media(min-width:900px){#edpanel{max-height:46dvh}}
 .edp{display:grid;gap:8px}
-@media(min-width:900px){.edp{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.edp .wide{grid-column:1/-1}}
+@media(min-width:700px){#player .edp{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#player .edp .wide{grid-column:1/-1}}
 .pt{background:var(--panel2);border-radius:14px;padding:10px 12px}
 .pt label{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;margin-bottom:6px}
 .pt label output{font-size:17px;font-variant-numeric:tabular-nums}
@@ -252,18 +263,19 @@ body[data-mode=edit] .player{border-top:2px solid var(--acc)}
     <button data-tab="queue" class="tq">Queue</button>
     <button data-tab="settings">Settings</button>
   </nav>
-  <div class="body"><main id="main"></main><aside id="side"></aside></div>
+  <div class="body"><main id="main"></main><aside id="side"><div id="qside"></div></aside></div>
   <footer class="player" id="player">
     <div class="bar" id="pbar"><div class="trk"><div class="fill"></div><div class="cutL"></div><div class="cutR"></div></div><div class="cues"></div></div>
+    <div id="editor"><div class="edhead" id="edHead"></div>
     <div class="tl" id="etl"><div class="fill"></div><div class="cutL"></div><div class="cutR"></div><div class="cues"></div><div class="ph"></div><div class="hd" data-h="s" id="hs"><span>START</span></div><div class="hd" data-h="e" id="he"><span>END</span></div></div>
     <div class="tlt" id="etlt"><span>0:00</span><span><b id="edPos">–</b><span class="saved" id="edSaved">Saved</span></span><span id="edDur">0:00</span></div>
+    <div id="edpanel"></div></div>
     <div class="prow">
       <div class="np"><img class="art" id="npArt" alt=""><div class="meta"><div class="t" id="npT">Nothing playing</div><div class="a" id="npA">Pick a playlist to start</div></div></div>
       <div class="ctl" id="ctl"></div>
       <div class="ext"><span class="time" id="npTime"></span><button class="chipbtn" data-p="full" id="bFull" title="Ignore cuts for this song">Full song</button></div>
     </div>
     <div class="jumps" id="jumps"></div>
-    <div id="edpanel"></div>
   </footer>
 </div>
 
@@ -328,6 +340,7 @@ const IC = {
   spk: sv('<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><path d="M12 6h.01"/>'),
   up: sv('<path d="M18 15l-6-6-6 6"/>'), down: sv('<path d="M6 9l6 6 6-6"/>'), x: sv('<path d="M18 6L6 18M6 6l12 12"/>'),
   back: sv('<path d="M15 18l-6-6 6-6"/>'),
+  addq: sv('<path d="M3 6h13M3 12h13M3 18h8"/><path d="M18 14v8M14 18h8"/>'),
   heart: '<svg viewBox="0 0 24 24"><path d="M12 21l-1.5-1.3C5 15 2 12.2 2 8.5 2 5.5 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.5 22 8.5c0 3.7-3 6.5-8.5 11.2z" fill="#fff"/></svg>',
   note: sv('<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>')
 };
@@ -735,12 +748,13 @@ function renderTop(){
 function cover(t, cls = 'art'){ return t.img ? `<img class="${cls}" src="${esc(t.img)}" alt="" loading="lazy">` : `<div class="${cls}" style="display:grid;place-items:center;color:var(--mute)">${IC.note.replace('<svg', '<svg width="20" height="20"')}</div>`; }
 function row(t, i, ctx, opts = {}){
   const tr = S.trims[t.id];
-  const badge = hasCut(tr) ? `<span class="badge">${fmt(tr.s || 0)}–${fmt(tr.e || t.dur)}</span>` : '';
-  const cues = (tr && tr.cues) || [];
+  const isQ = ctx === 'q';
+  const badge = isQ && hasCut(tr) ? `<span class="badge">${fmt(tr.s || 0)}–${fmt(tr.e || t.dur)}</span>` : '';
+  const cues = (!isQ && tr && tr.cues) || [];
   const rj = cues.length ? `<div class="rj">${cues.map((c, k) => `<button data-act="j:${k}" title="Play from ${esc(c.l)} (${fmt(c.t)})">${esc(c.l)}</button>`).join('')}</div>` : '';
   const btns = opts.q
     ? `<button class="ib" data-act="up" aria-label="Move up">${IC.up}</button><button class="ib" data-act="down" aria-label="Move down">${IC.down}</button><button class="ib" data-act="rm" aria-label="Remove">${IC.x}</button>`
-    : `<button class="ib" data-act="menu" aria-label="More options">${IC.more}</button>`;
+    : `<button class="ib" data-act="queue" aria-label="Add to queue" title="Add to queue">${IC.addq}</button><button class="ib" data-act="menu" aria-label="More options">${IC.more}</button>`;
   return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div>${rj}</div>${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div>`;
 }
 function markRows(){ document.querySelectorAll('.row').forEach(r => r.classList.toggle('on', !!S.now.id && r.dataset.id === S.now.id)); }
@@ -791,7 +805,13 @@ function queueHTML(){
   if (qEnd < S.list.length) h += `<h3 class="qh">Next from ${esc(S.src || 'your list')}<button data-l="qclear">Clear</button></h3><div class="rows">` + S.list.slice(qEnd, qEnd + 150).map((t, k) => row(t, qEnd + k, 'q', { q: true })).join('') + '</div>' + (S.list.length - qEnd > 150 ? `<p class="hint">…and ${S.list.length - qEnd - 150} more</p>` : '');
   return h;
 }
-function renderSide(){ const a = $('#side'); if (getComputedStyle(a).display !== 'none') a.innerHTML = queueHTML(); }
+function renderSide(){ const a = $('#side'); if (getComputedStyle(a).display !== 'none') $('#qside').innerHTML = queueHTML(); }
+function placeEditor(){
+  const wide = matchMedia('(min-width:1000px)').matches, ed = $('#editor');
+  const host = wide ? $('#side') : $('#player'), before = wide ? null : $('#player .prow');
+  if (ed.parentNode !== host) host.insertBefore(ed, before);
+  document.body.classList.toggle('edside', wide);
+}
 function settingsHTML(){
   const n = Object.keys(S.trims).length;
   return `<h2 style="margin-bottom:14px">Settings</h2>
@@ -933,12 +953,12 @@ function newPlaylistSheet(){
   setTimeout(() => { const i = $('#npName2'); if (i) i.focus(); }, 50);
 }
 
-/* ---------- edit mode: everything lives in the bottom bar and saves automatically ---------- */
+/* ---------- edit mode: in the right panel on wide screens, under the player on phones; saves automatically ---------- */
 function setMode(m){
   S.mode = m === 'edit' ? 'edit' : 'play'; LS.set('pc.mode', S.mode); document.body.dataset.mode = S.mode;
   S.cutDone = false; S.edKey = null;
-  renderTop(); renderPlayer();
-  if (S.mode === 'edit') toast(S.now.id ? 'Edit mode: changes save automatically. Songs pause at their end point.' : 'Edit mode: play any song, then set its start, end and jump points below the player.', 3200);
+  placeEditor(); renderTop(); renderPlayer(); renderSide();
+  if (S.mode === 'edit') toast(S.now.id ? 'Edit mode: changes save automatically. Songs pause at their end point.' : 'Edit mode: play any song, then set its start, end and jump points here.', 3200);
 }
 function editTarget(){
   const n = S.now; if (!n.id) return null;
@@ -980,6 +1000,7 @@ function renderEditPanel(){
   if (key !== S.edKey) {
     S.edKey = key;
     $('#edpanel').innerHTML = et ? editPanelHTML() : '<p class="empty-edit">Tap any song to play it. Then set where it starts and ends, and add jump points, right here. Everything saves automatically.</p>';
+    $('#edHead').innerHTML = et ? `${cover(et.t)}<div class="meta"><small>Editing</small><b>${esc(et.t.name)}</b><span>${esc(et.t.artists)}</span></div>` : '<div class="meta"><small>Editing</small><b>Nothing playing</b></div>';
   }
   drawEdit();
 }
@@ -1144,6 +1165,7 @@ document.addEventListener('click', e => {
   const ctx = r.dataset.ctx, i = +r.dataset.i, t = listFor(ctx)[i]; if (!t) return;
   if (ds.act && ds.act.startsWith('j:')) { const c = (S.trims[t.id] && S.trims[t.id].cues || [])[+ds.act.slice(2)]; if (c) return safe(() => playRow(ctx, i, t, c.t)); return; }
   if (ds.act === 'menu') return openMenu(ctx, i);
+  if (ds.act === 'queue') return addQueue(t, false);
   if (ds.act === 'up') return qMove(i, -1);
   if (ds.act === 'down') return qMove(i, 1);
   if (ds.act === 'rm') return qRemove(i);
@@ -1166,11 +1188,11 @@ document.addEventListener('change', e => {
   if (e.target.id === 'imp' && e.target.files[0]) importData(e.target.files[0]);
 });
 $('#pbar').addEventListener('click', e => { if (!S.now.id) return; const r = e.currentTarget.getBoundingClientRect(); safe(() => pSeek(clamp((e.clientX - r.left) / r.width, 0, 1) * S.now.dur)); });
-window.addEventListener('resize', () => renderSide());
+window.addEventListener('resize', () => { placeEditor(); renderSide(); });
 
 /* ---------- start ---------- */
 async function boot(){
-  document.body.dataset.mode = S.mode; bindTimeline();
+  document.body.dataset.mode = S.mode; placeEditor(); bindTimeline();
   renderTop(); renderPlayer(); renderSide();
   try { await handleRedirect(); } catch (e) { showSetup(e.message); return; }
   if (!S.tok) { showSetup(); return; }
