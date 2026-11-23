@@ -120,6 +120,11 @@ aside{display:none}
 .chipbtn.on{color:var(--bg);background:var(--ok);border-color:var(--ok)}
 .jumps{display:flex;gap:6px;overflow-x:auto;padding-top:6px}
 .jumps:empty{display:none}
+.qadd{display:flex;gap:6px;overflow-x:auto;padding-top:6px;align-items:center;scrollbar-width:none}
+.qadd:empty{display:none}
+.qadd span{flex:none;color:var(--mute);font-size:12px;font-weight:700;padding-right:2px}
+.qadd button{flex:none;min-height:30px;padding:0 11px;border-radius:999px;border:1px dashed #6b5a2a;color:var(--cue);font-weight:600;font-size:12px}
+.qadd button:hover{background:#2a230f}
 .jumps button{flex:none;min-height:32px;padding:0 12px;border-radius:999px;background:#2a230f;border:1px solid #5e4d1f;color:var(--cue);font-weight:600;font-size:13px}
 @media(max-width:700px){
  .prow{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"np ext" "ctl ctl"}
@@ -234,6 +239,7 @@ aside{display:none}
       <div class="ext"><span class="time" id="npTime"></span><button class="chipbtn" data-p="full" id="bFull" title="Ignore cuts for this song">Full song</button><button class="ib" data-p="editnow" title="Edit cuts for this song" id="bEdit"></button></div>
     </div>
     <div class="jumps" id="jumps"></div>
+    <div class="qadd" id="qadd"></div>
   </footer>
 </div>
 
@@ -279,7 +285,13 @@ const MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 const API = 'https://api.spotify.com/v1';
 const SCOPES = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing streaming playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read';
 const sv = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-const PRESETS = ['Beat in', 'Hook', 'Mukhda', 'Chorus', 'Build-up', 'Drop', 'Final chorus', 'Feature verse', 'Beat switch', 'Dance break', 'Solo', 'Singalong'];
+const PRESETS = ['Beat in', 'Hook', 'Chorus', 'Build-up', 'Drop', 'Feature verse', 'Beat switch', 'Singalong'];
+function uniqueLabel(cues, name){
+  const taken = new Set((cues || []).map(c => c.l.toLowerCase()));
+  if (!taken.has(name.toLowerCase())) return name;
+  let n = 2; while (taken.has((name + ' ' + n).toLowerCase())) n++;
+  return name + ' ' + n;
+}
 const IC = {
   play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
   pause: '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',
@@ -777,6 +789,7 @@ function renderPlayer(){
   const ign = S.set.ignore || S.fullKey === S.inst;
   paintBar($('#pbar'), n.dur, ign ? null : tr, tr);
   $('#jumps').innerHTML = (tr && tr.cues || []).map((c, i) => `<button data-p="jump:${i}">${esc(c.l)} · ${fmt(c.t)}</button>`).join('');
+  $('#qadd').innerHTML = n.id ? '<span>+ Jump point</span>' + PRESETS.map((p, i) => `<button data-p="qa:${i}">${esc(p)}</button>`).join('') + '<button data-p="editnow">Other…</button>' : '';
   drawProgress();
 }
 function paintBar(el, dur, cut, deco){
@@ -991,7 +1004,7 @@ function edAct(a){
   if (k === 'cadd' || k === 'cpre') {
     if (d.cues.length >= 8) return toast('Up to 8 jump points per song.');
     const i = $('#cueName');
-    const l = k === 'cpre' ? PRESETS[+arg] : ((i.value || '').trim() || 'Jump ' + (d.cues.length + 1));
+    const l = uniqueLabel(d.cues, k === 'cpre' ? PRESETS[+arg] : ((i.value || '').trim() || 'Jump'));
     if (k === 'cpre' && !(S.now.playing && same(S.now, t))) toast('Tip: play the song and tap the name when that part starts.', 3500);
     d.cues.push({ t: Math.round(edPos()), l }); d.cues.sort((x, y) => x.t - y.t); if (k === 'cadd') i.value = '';
     return drawEd();
@@ -1028,6 +1041,21 @@ function closeEditor(){
   S.cutDone = false; renderPlayer();
 }
 function refreshAfterTrim(){ renderPlayer(); if (['playlist', 'library', 'search', 'queue'].includes(S.view)) renderMain(); renderSide(); }
+
+/* ---------- quick-add jump points from the player ---------- */
+function quickAdd(name){
+  const n = S.now; if (!n.id) return toast('Nothing is playing.');
+  const c = S.list[S.idx];
+  const id = S.trims[n.id] ? n.id : (c && same(c, n) && S.trims[c.id] ? c.id : n.id);
+  const src = c && same(c, n) ? c : n;
+  const tr = S.trims[id] || (S.trims[id] = { u: src.uri, n: src.name, a: src.artists, d: src.dur, i: src.img });
+  tr.cues = tr.cues || [];
+  if (tr.cues.length >= 8) return toast('Up to 8 jump points per song. Delete one in the editor first.');
+  const l = uniqueLabel(tr.cues, name), t = Math.round(n.pos);
+  tr.cues.push({ t, l }); tr.cues.sort((x, y) => x.t - y.t);
+  saveTrims(); renderPlayer(); renderSide(); if (S.view !== 'settings') renderMain();
+  toast('Added ' + l + ' at ' + fmt(t) + '. Fine-tune it with the scissors button.', 2600);
+}
 
 /* ---------- backup ---------- */
 function exportData(){
@@ -1066,6 +1094,7 @@ document.addEventListener('click', e => {
     if (k === 'rep') { S.repeat = !S.repeat; saveQ(); renderPlayer(); return toast(S.repeat ? 'The list will start again at the end' : 'Stop at the end of the list', 1800); }
     if (k === 'full') { S.fullKey = S.fullKey === S.inst ? null : S.inst; renderPlayer(); return toast(S.fullKey ? 'Playing this song in full' : 'Cuts back on for this song', 1800); }
     if (k === 'editnow') { if (!S.now.id) return toast('Nothing is playing.'); const t = S.list[S.idx] && same(S.list[S.idx], S.now) ? S.list[S.idx] : { id: S.now.id, uri: S.now.uri, name: S.now.name, artists: S.now.artists, dur: S.now.dur, img: S.now.img }; return openEditor(t); }
+    if (k === 'qa') return quickAdd(PRESETS[+arg]);
     if (k === 'jump') { const tr = trimFor(S.now); if (tr && tr.cues[+arg]) return safe(() => pSeek(tr.cues[+arg].t)); }
     return;
   }
