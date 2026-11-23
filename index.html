@@ -606,6 +606,7 @@ async function pPause(){ if (isSdk()) return S.sdk.pause(); try { await api('/me
 async function pResume(){ if (isSdk()) return S.sdk.resume(); await api('/me/player/play' + dq(), { method: 'PUT' }); }
 async function pSeek(ms){
   ms = Math.max(0, Math.round(ms));
+  if (S.expect && ms !== S.expect.start) S.expect = null;
   if (isSdk()) await S.sdk.seek(ms); else await api('/me/player/seek?position_ms=' + ms + dq('&'), { method: 'PUT' });
   Object.assign(S.now, { pos: ms, base: ms, at: performance.now() });
   const end = effEnd(); if (end == null || ms < end - 500) S.cutDone = false;
@@ -656,6 +657,14 @@ function applyState(st){
   if (!st) { if (S.now.playing) { S.now.playing = false; renderPlayer(); wake(false); } return; }
   if (st.dev) { S.devVolOK = st.dev.supports_volume !== false; if (!S.fading) S.devVol = st.dev.volume_percent; }
   if (st.none) { if (S.now.playing) { S.now.playing = false; renderPlayer(); } return; }
+  const ex = S.expect;
+  if (ex && t < ex.until && (st.id === ex.id || same(st, ex.t))) {
+    if (st.pos < ex.start - 1500) {
+      if (!ex.busy && ex.tries < 3) { ex.busy = true; ex.tries++; pSeek(ex.start).catch(() => {}).finally(() => { ex.busy = false; lastPoll = performance.now() - 1500; }); }
+      return;
+    }
+    S.expect = null;
+  } else if (ex && t >= ex.until) S.expect = null;
   if (t < S.holdUntil && st.id !== S.now.id) return;
   const changed = st.id !== S.now.id, pchg = st.playing !== S.now.playing;
   if (t < S.holdUntil && !changed && Math.abs(st.pos - S.now.pos) > 2500) return;
@@ -725,6 +734,9 @@ async function playIdx(j, startAt){
   S.inst++; S.cutDone = false; S.fullKey = null;
   Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, imgL: t.imgL, dur: t.dur, pos: start, base: start, at: performance.now(), playing: true });
   S.holdUntil = performance.now() + 2500; lastPoll = performance.now() - 1200;
+  // Some Spotify apps ignore the start position in a play request. Check, and seek if they did.
+  S.expect = start > 1500 ? { id: t.id, t, start, tries: 0, until: performance.now() + 9000 } : null;
+  if (S.expect && !isSdk()) { lastPoll = performance.now() - 1700; }
   if (S.fading) setTimeout(restoreVol, isSdk() ? 150 : 400);
   saveQ(); renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain(); wake(true);
 }
