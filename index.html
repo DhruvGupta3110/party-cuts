@@ -177,7 +177,13 @@ aside{display:none}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .chip{display:inline-flex;align-items:center;border:1px solid #5e4d1f;border-radius:999px;background:#2a230f;color:var(--cue);font-weight:600;font-size:13px}
 .chip button{min-height:32px;padding:0 10px}
-.chip button+button{padding:0 10px 0 2px;opacity:.7}
+.chip .cs{min-height:26px;margin:3px 0;padding:0 9px;border-radius:999px;background:#3a2414;border:1px solid #7a4020;color:var(--acc);font-size:12px;font-weight:700}
+.chip .cs.on{background:var(--acc);border-color:var(--acc);color:#1b0f08}
+.chip .cx{padding:0 10px 0 6px;opacity:.7}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}
+.presets button{min-height:34px;padding:0 12px;border-radius:999px;border:1px dashed #6b5a2a;color:var(--cue);font-size:13px;font-weight:600}
+.presets button:hover{background:#2a230f}
+.cuesbox small{display:block;color:var(--mute);font-size:12px;font-weight:600;margin:10px 0 2px}
 .addcue{display:flex;gap:8px}
 .addcue input{flex:1}
 .edfoot{display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:-18px;background:var(--panel);padding:10px 0 4px}
@@ -271,6 +277,7 @@ const MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 const API = 'https://api.spotify.com/v1';
 const SCOPES = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing streaming playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read';
 const sv = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const PRESETS = ['Beat in', 'Hook', 'Mukhda', 'Chorus', 'Build-up', 'Drop', 'Final chorus', 'Feature verse', 'Beat switch', 'Dance break', 'Solo', 'Singalong'];
 const IC = {
   play: '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
   pause: '<svg viewBox="0 0 24 24"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>',
@@ -894,8 +901,10 @@ function openEditor(t){
   <div class="hypebox"><button class="hold" id="hold">Hold while it's hype</button><button class="btn" data-e="hclr">Clear hype map</button></div>
   <p class="hint" style="margin-top:-6px">While the song plays, hold the pink button during the loud, exciting parts. They're drawn on the bar so you can see the song's shape at a glance.</p>
   <div class="cuesbox"><label>Jump points</label><div class="chips" id="edCues"></div>
-    <div class="addcue"><input id="cueName" placeholder="Name, e.g. Drop" maxlength="16"><button class="btn" data-e="cadd">Add at current spot</button></div>
-    <p class="hint">Jump points show as buttons under the player so you can skip straight to the drop during the party.</p></div>
+    <small>Tap a name to add a jump point where the song is playing now</small>
+    <div class="presets">${PRESETS.map((n, i) => `<button data-e="cpre:${i}">${esc(n)}</button>`).join('')}</div>
+    <div class="addcue"><input id="cueName" placeholder="Your own name" maxlength="16"><button class="btn" data-e="cadd">Add at current spot</button></div>
+    <p class="hint">Jump points show as buttons under the player so you can skip straight to them during the party. Tap <b>Start here</b> on one to make the song begin there.</p></div>
   <div class="edfoot"><button class="btn" data-e="cancel">Cancel</button><button class="pri" data-e="save">Save</button></div>`, 'editor');
   drawEd(); bindEditor();
 }
@@ -903,12 +912,12 @@ function edPos(){ const ed = S.editing; return ed && S.now.id && same(S.now, ed.
 function drawEd(){
   const ed = S.editing; if (!ed) return; const { t, d } = ed, tl = $('#tl'); if (!tl) return;
   paintBar(tl, t.dur, d, d);
-  tl.querySelector('.cues').innerHTML = d.cues.map(c => `<i style="left:${pct(c.t, t.dur)}%"><span>${esc(c.l)}</span></i>`).join('');
+  tl.querySelector('.cues').innerHTML = d.cues.map((c, i) => `<i style="left:${pct(c.t, t.dur)}%"><span${i % 2 ? ' style="top:auto;bottom:3px"' : ''}>${esc(c.l)}</span></i>`).join('');
   $('#hs').style.left = pct(d.s || 0, t.dur) + '%'; $('#hs').classList.toggle('flip', pct(d.s || 0, t.dur) < 10);
   $('#he').style.left = pct(d.e || t.dur, t.dur) + '%'; $('#he').classList.toggle('flip', pct(d.e || t.dur, t.dur) <= 90);
   $('#edS').textContent = fmt1(d.s || 0);
   $('#edE').textContent = fmt1(d.e || t.dur);
-  $('#edCues').innerHTML = d.cues.map((c, i) => `<span class="chip"><button data-e="cgo:${i}">${esc(c.l)} · ${fmt(c.t)}</button><button data-e="cdel:${i}" aria-label="Delete jump point">✕</button></span>`).join('') || '<span class="hint">None yet.</span>';
+  $('#edCues').innerHTML = d.cues.map((c, i) => `<span class="chip"><button data-e="cgo:${i}" title="Listen from here">${esc(c.l)} · ${fmt(c.t)}</button><button class="cs${(d.s || 0) === c.t ? ' on' : ''}" data-e="cstart:${i}">${(d.s || 0) === c.t ? 'Starts here' : 'Start here'}</button><button class="cx" data-e="cdel:${i}" aria-label="Delete jump point">✕</button></span>`).join('') || '<span class="hint">None yet.</span>';
   drawEdLive();
 }
 function drawEdLive(){
@@ -977,7 +986,20 @@ function edAct(a){
   if (k === 'sclr') { d.s = 0; return drawEd(); }
   if (k === 'eclr') { d.e = 0; return drawEd(); }
   if (k === 'hclr') { d.hype = []; return drawEd(); }
-  if (k === 'cadd') { if (d.cues.length >= 8) return toast('Up to 8 jump points per song.'); const i = $('#cueName'); const l = (i.value || '').trim() || 'Jump ' + (d.cues.length + 1); d.cues.push({ t: Math.round(edPos()), l }); d.cues.sort((x, y) => x.t - y.t); i.value = ''; return drawEd(); }
+  if (k === 'cadd' || k === 'cpre') {
+    if (d.cues.length >= 8) return toast('Up to 8 jump points per song.');
+    const i = $('#cueName');
+    const l = k === 'cpre' ? PRESETS[+arg] : ((i.value || '').trim() || 'Jump ' + (d.cues.length + 1));
+    if (k === 'cpre' && !(S.now.playing && same(S.now, t))) toast('Tip: play the song and tap the name when that part starts.', 3500);
+    d.cues.push({ t: Math.round(edPos()), l }); d.cues.sort((x, y) => x.t - y.t); if (k === 'cadd') i.value = '';
+    return drawEd();
+  }
+  if (k === 'cstart') {
+    const c = d.cues[+arg]; if (!c) return;
+    if (c.t >= (d.e || t.dur) - 2000) return toast('That spot is after the end point. Move the end point later first.');
+    d.s = c.t < 200 ? 0 : c.t; drawEd(); toast('The song will start at ' + c.l + ' (' + fmt(c.t) + '). Tap Save to keep it.', 3000);
+    return edPreview(() => edSeek(d.s || 0));
+  }
   if (k === 'cgo') return safe(() => edSeek(d.cues[+arg].t));
   if (k === 'cdel') { d.cues.splice(+arg, 1); return drawEd(); }
   if (k === 'cancel') return closeEditor();
