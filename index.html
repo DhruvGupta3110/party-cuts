@@ -607,6 +607,7 @@ async function pResume(){ if (isSdk()) return S.sdk.resume(); await api('/me/pla
 async function pSeek(ms){
   ms = Math.max(0, Math.round(ms));
   if (S.expect && ms !== S.expect.start) S.expect = null;
+  S.seekGen = (S.seekGen || 0) + 1;
   if (isSdk()) await S.sdk.seek(ms); else await api('/me/player/seek?position_ms=' + ms + dq('&'), { method: 'PUT' });
   Object.assign(S.now, { pos: ms, base: ms, at: performance.now() });
   const end = effEnd(); if (end == null || ms < end - 500) S.cutDone = false;
@@ -628,7 +629,7 @@ async function readState(){
 }
 
 /* ---------- the engine: watches playback and applies your cuts ---------- */
-let busy = false, lastPoll = 0;
+let busy = false, lastPoll = -1e9;
 function effEnd(){
   const n = S.now; if (!n.id) return null;
   const tr = trimFor(n), ign = S.set.ignore || S.fullKey === S.inst;
@@ -655,7 +656,7 @@ async function tick(){
 function applyState(st){
   const t = performance.now();
   if (!st) { if (S.now.playing) { S.now.playing = false; renderPlayer(); wake(false); } return; }
-  if (st.dev) { S.devVolOK = st.dev.supports_volume !== false; if (!S.fading) S.devVol = st.dev.volume_percent; }
+  if (st.dev) { S.devVolOK = st.dev.supports_volume !== false; if (!S.fading && !S.muting) S.devVol = st.dev.volume_percent; }
   if (st.none) { if (S.now.playing) { S.now.playing = false; renderPlayer(); } return; }
   const ex = S.expect;
   if (ex && t < ex.until && (st.id === ex.id || same(st, ex.t))) {
@@ -728,8 +729,11 @@ async function playIdx(j, startAt){
   const start = startAt != null ? startAt : ((!S.set.ignore && tr && tr.s) || 0);
   const prevIdx = S.idx;
   S.selfAt = performance.now(); S.selfT = t; S.holdUntil = S.selfAt + 2500;
+  const fix = !isSdk() && start > 1500;
+  const muted = fix ? await preMute() : null;
   try { S.idx = j; await pPlay(S.list.slice(j, j + 60).map(x => x.uri), start); }
-  catch (e) { S.idx = prevIdx; throw e; }
+  catch (e) { S.idx = prevIdx; if (muted != null) unmute(muted); throw e; }
+  if (muted != null) S.fading = false;
   S.external = false; S.resumeNeedsReplay = false;
   S.inst++; S.cutDone = false; S.fullKey = null;
   Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, imgL: t.imgL, dur: t.dur, pos: start, base: start, at: performance.now(), playing: true });
@@ -739,6 +743,39 @@ async function playIdx(j, startAt){
   if (S.expect && !isSdk()) { lastPoll = performance.now() - 1700; }
   if (S.fading) setTimeout(restoreVol, isSdk() ? 150 : 400);
   saveQ(); renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain(); wake(true);
+  if (fix) landAt(start, muted);
+}
+/* Spotify's apps often ignore the start position in a play request. So for those speakers JUMP
+   seeks straight after "play" and, where the speaker lets it, keeps the sound muted until the
+   song is really at its start point. */
+async function preMute(){
+  let v = S.fading ? S.fadeVol : S.devVol;
+  if (v == null) { try { const j = await api('/me/player'); if (j && j.device) { S.devVolOK = j.device.supports_volume !== false; v = j.device.volume_percent; } } catch {} }
+  if (!S.devVolOK || !v) return null;
+  S.muting = true;
+  try { await pVol(0); return v; } catch { S.muting = false; return null; }
+}
+async function unmute(v){
+  for (let i = 0; i < 2; i++) { try { await pVol(v); break; } catch { await sleep(400); } }
+  S.muting = false; S.devVol = v;
+}
+const seekRaw = ms => api('/me/player/seek?position_ms=' + Math.round(ms) + dq('&'), { method: 'PUT' });
+async function landAt(start, muted){
+  const g0 = S.seekGen, i0 = S.inst, stale = () => S.seekGen !== g0 || S.inst !== i0;
+  try {
+    await sleep(250);
+    if (stale()) return;
+    await seekRaw(start);
+    if (muted == null) return;
+    for (let i = 0; i < 6; i++) {
+      await sleep(300);
+      if (stale()) break;
+      const j = await api('/me/player');
+      if (j && j.item && (j.progress_ms || 0) >= start - 1500) break;
+      if (i === 2) await seekRaw(start);
+    }
+  } catch (e) { console.warn('landAt', e); }
+  finally { if (muted != null) await unmute(muted); }
 }
 async function playFrom(tracks, i, shuf, src, startAt){
   if (!tracks || !tracks.length) return toast('No songs here yet.');
