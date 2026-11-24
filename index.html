@@ -431,6 +431,8 @@ const pct = (ms, d) => clamp(ms / (d || 1) * 100, 0, 100);
 const REDIRECT = location.origin + location.pathname;
 const MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 const PHONE_DEVICE = /Android.*Mobile|iPhone|iPod/i.test(navigator.userAgent);
+// Running inside the JUMP Android app: playback is handled by the app itself (works with the screen off).
+const NATIVE = typeof window.JumpNative !== 'undefined';
 let PHONE = false;
 try { PHONE = PHONE_DEVICE && localStorage.getItem('pc.full') !== 'true'; } catch { PHONE = PHONE_DEVICE; }
 const vib = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {} };
@@ -477,8 +479,13 @@ const S = {
   mode: !PHONE && LS.get('pc.mode', 'play') === 'edit' ? 'edit' : 'play', edKey: null, drag: null, dragging: false, sheet: null, menu: null
 };
 Object.assign(S, (({list, orig, idx, qn, shuffle, repeat, src}) => ({list: list || [], orig: orig || [], idx: idx ?? -1, qn: qn || 0, shuffle: !!shuffle, repeat: !!repeat, src: src || ''}))(LS.get('pc.q', {})));
-const saveQ = () => LS.set('pc.q', { list: S.list, orig: S.orig, idx: S.idx, qn: S.qn, shuffle: S.shuffle, repeat: S.repeat, src: S.src });
-const saveTrims = () => LS.set('pc.trims', S.trims);
+const saveQLocal = () => LS.set('pc.q', { list: S.list, orig: S.orig, idx: S.idx, qn: S.qn, shuffle: S.shuffle, repeat: S.repeat, src: S.src });
+const saveQ = () => { saveQLocal(); natPushQueue(); };
+const saveTrims = () => { LS.set('pc.trims', S.trims); natPushCuts(); };
+function natPushQueue(){ if (!NATIVE) return; try { JumpNative.setQueue(JSON.stringify({ list: S.list.map(t => ({ id: t.id, uri: t.uri, name: t.name, artists: t.artists, dur: t.dur })), idx: S.idx, repeat: S.repeat })); } catch {} }
+function natPushCuts(){ if (!NATIVE) return; const o = {}; for (const [id, v] of Object.entries(S.trims)) if (v && (v.s || v.e)) o[id] = { s: v.s || 0, e: v.e || 0 }; try { JumpNative.setCuts(JSON.stringify(o)); } catch {} }
+function natPushSettings(){ if (NATIVE) try { JumpNative.setIgnore(!!S.set.ignore); } catch {} }
+function natConnect(){ if (NATIVE && S.cid) try { JumpNative.connect(S.cid, REDIRECT); } catch {} }
 { let ch = false; for (const [k, v] of Object.entries(S.trims)) { if (v && v.hype) { delete v.hype; ch = true; if (!v.s && !v.e && !(v.cues && v.cues.length)) delete S.trims[k]; } } if (ch) saveTrims(); }
 const saveSet = () => LS.set('pc.set', S.set);
 const isSdk = () => !!S.sdkId && S.dev === S.sdkId;
@@ -602,13 +609,13 @@ async function pPlay(uris, pos){
     else throw e;
   }
 }
-async function pPause(){ if (isSdk()) return S.sdk.pause(); try { await api('/me/player/pause' + dq(), { method: 'PUT' }); } catch (e) { if (e.status !== 403) throw e; } }
-async function pResume(){ if (isSdk()) return S.sdk.resume(); await api('/me/player/play' + dq(), { method: 'PUT' }); }
+async function pPause(){ if (NATIVE) return JumpNative.pause(); if (isSdk()) return S.sdk.pause(); try { await api('/me/player/pause' + dq(), { method: 'PUT' }); } catch (e) { if (e.status !== 403) throw e; } }
+async function pResume(){ if (NATIVE) return JumpNative.resume(); if (isSdk()) return S.sdk.resume(); await api('/me/player/play' + dq(), { method: 'PUT' }); }
 async function pSeek(ms){
   ms = Math.max(0, Math.round(ms));
   if (S.expect && ms !== S.expect.start) S.expect = null;
   S.seekGen = (S.seekGen || 0) + 1;
-  if (isSdk()) await S.sdk.seek(ms); else await api('/me/player/seek?position_ms=' + ms + dq('&'), { method: 'PUT' });
+  if (NATIVE) JumpNative.seek(ms); else if (isSdk()) await S.sdk.seek(ms); else await api('/me/player/seek?position_ms=' + ms + dq('&'), { method: 'PUT' });
   Object.assign(S.now, { pos: ms, base: ms, at: performance.now() });
   const end = effEnd(); if (end == null || ms < end - 500) S.cutDone = false;
   S.holdUntil = performance.now() + 1200;
@@ -640,6 +647,11 @@ function effEnd(){
 async function tick(){
   if (!S.tok) return;
   const t = performance.now(), sdk = isSdk();
+  if (NATIVE) {
+    if (t - lastPoll >= 1000) { lastPoll = t; try { window.JUMP_onNative(JSON.parse(JumpNative.state())); } catch {} }
+    else if (S.now.id && S.now.playing) S.now.pos = Math.min(S.now.dur, S.now.base + (t - S.now.at));
+    drawProgress(); return;
+  }
   const end = effEnd(), near = end != null && end - S.now.pos < 7000;
   const every = sdk ? 250 : (S.now.playing ? (near ? 1000 : 2500) : 4000);
   if (!busy && t - lastPoll >= every && (S.dev || !sdk)) {
@@ -666,9 +678,9 @@ function applyState(st){
     }
     S.expect = null;
   } else if (ex && t >= ex.until) S.expect = null;
-  if (t < S.holdUntil && st.id !== S.now.id) return;
+  if (!NATIVE && t < S.holdUntil && st.id !== S.now.id) return;
   const changed = st.id !== S.now.id, pchg = st.playing !== S.now.playing;
-  if (t < S.holdUntil && !changed && Math.abs(st.pos - S.now.pos) > 2500) return;
+  if (!NATIVE && t < S.holdUntil && !changed && Math.abs(st.pos - S.now.pos) > 2500) return;
   Object.assign(S.now, { id: st.id, uri: st.uri, name: st.name, artists: st.artists, img: st.img, imgL: st.imgL, dur: st.dur, pos: st.pos, base: st.pos, at: t, playing: st.playing });
   if (changed) onTrackChange(st);
   if (changed || pchg) { renderPlayer(); wake(st.playing); markRows(); if (changed) renderSide(); }
@@ -676,6 +688,7 @@ function applyState(st){
 function onTrackChange(st){
   S.inst++; S.cutDone = false; S.fullKey = null;
   if (S.fading) restoreVol();
+  if (NATIVE) return;
   const cur = S.list[S.idx];
   if (cur && same(cur, st)) S.external = false;
   else {
@@ -688,6 +701,7 @@ function onTrackChange(st){
   if (tr && tr.s && st.pos < tr.s - 200 && st.pos < 12000) safe(() => pSeek(tr.s));
 }
 function enforce(){
+  if (NATIVE) return;
   const n = S.now;
   if (S.dragging || !n.playing || !n.id || S.cutDone || S.busyCut) return;
   const end = effEnd(); if (end == null) return;
@@ -724,6 +738,16 @@ function restoreVol(){ if (!S.fading) return; S.fading = false; if (S.fadeVol !=
 function shuffleArr(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 async function playIdx(j, startAt){
   const t = S.list[j]; if (!t) return;
+  if (NATIVE) {
+    ensureDevice();
+    const tr0 = S.trims[t.id], st0 = startAt != null ? startAt : ((!S.set.ignore && tr0 && tr0.s) || 0);
+    S.idx = j; saveQLocal(); natPushQueue(); JumpNative.playIndex(j, startAt != null ? startAt : -1);
+    S.external = false; S.resumeNeedsReplay = false; S.inst++; S.cutDone = false; S.fullKey = null;
+    Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, imgL: t.imgL, dur: t.dur, pos: st0, base: st0, at: performance.now(), playing: true });
+    S.holdUntil = performance.now() + 1500;
+    renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain();
+    return;
+  }
   ensureDevice();
   const tr = S.trims[t.id];
   const start = startAt != null ? startAt : ((!S.set.ignore && tr && tr.s) || 0);
@@ -786,6 +810,7 @@ async function playFrom(tracks, i, shuf, src, startAt){
   await playIdx(start, startAt);
 }
 async function next(){
+  if (NATIVE) { natPushQueue(); return JumpNative.next(); }
   if (S.external && !S.list.length) return api('/me/player/next' + dq(), { method: 'POST' });
   if (!S.list.length) return;
   let j = S.idx + 1;
@@ -798,6 +823,7 @@ async function next(){
   await playIdx(j);
 }
 async function prev(){
+  if (NATIVE) return JumpNative.prev();
   const tr = trimFor(S.now), st = (!S.set.ignore && tr && tr.s) || 0;
   if (!S.now.id) return;
   if (S.now.pos - st > 4000 || S.idx <= 0 || S.external) return pSeek(st);
@@ -842,6 +868,14 @@ async function jumpTo(i, startAt){ if (i === S.idx && startAt == null) return; i
 const SPOTIFY_APP = /Android/i.test(navigator.userAgent) ? 'intent://open#Intent;scheme=spotify;package=com.spotify.music;end' : 'spotify:';
 let devTimer = null, awaitSpotify = false;
 async function openDevices(){
+  if (NATIVE) {
+    const st = natStatus;
+    openSheet(`<div class="sh"><h3>Spotify on this phone</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+      <p style="margin:0 0 12px">${st === 'connected' ? 'Connected. JUMP plays through the Spotify app on this phone, and your cuts keep working with the screen off.' : st === 'connecting' ? 'Connecting to the Spotify app…' : esc(natMsg || 'Not connected to the Spotify app yet.')}</p>
+      <div class="row2"><button class="pri" data-d="reconnect">${st === 'connected' ? 'Reconnect' : 'Connect'}</button></div>
+      <p class="hint">The Spotify app must be installed and logged in. The first time, Spotify asks you to allow JUMP.</p>`, 'dev');
+    return;
+  }
   openSheet(`<div class="sh"><h3>Where should the music play?</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
     <div class="mlist" id="devList"><p class="hint">Looking for speakers…</p></div>
     ${MOBILE ? `<div class="note" style="margin:10px 0"><b style="color:var(--ink)">Don't see this phone?</b> Spotify only lists a phone while its app is awake. Tap <b style="color:var(--ink)">Open Spotify</b>, play any song for a second, then come back here. JUMP will pick it up by itself.</div>
@@ -863,6 +897,7 @@ async function fetchDevices(){
   return ds.filter(d => d && d.id);
 }
 async function listDevices(quiet){
+  if (NATIVE) return;
   const ds = await fetchDevices();
   S.devs = ds;
   if (MOBILE && (!S.dev || !ds.some(d => d.id === S.dev))) { const ph = ds.find(x => /smartphone/i.test(x.type)) || ds.find(x => x.is_active); if (ph) return pickDevice(ph.id); }
@@ -883,6 +918,7 @@ async function pickDevice(id){
   toast('Playing on ' + S.devName, 2000);
 }
 async function autoPickDevice(){
+  if (NATIVE) return;
   if (S.dev) return;
   try {
     const ds = await fetchDevices(); S.devs = ds;
@@ -930,7 +966,8 @@ function renderTop(){
   const b = $('#devbtn');
   b.className = 'devbtn' + (S.dev ? ' set' : '');
   b.title = S.dev ? 'Playing on ' + (S.devName || 'speaker') : 'Choose speaker';
-  b.innerHTML = IC.spk + '<span>' + esc(S.dev ? S.devName || 'Speaker' : 'Choose speaker') + '</span>';
+  b.innerHTML = IC.spk + '<span>' + esc(NATIVE ? (natStatus === 'connected' ? 'This phone' : 'Connecting…') : S.dev ? S.devName || 'Speaker' : 'Choose speaker') + '</span>';
+  if (NATIVE) b.classList.toggle('set', natStatus === 'connected');
   document.querySelectorAll('#modes button').forEach(x => { x.classList.toggle('on', x.dataset.mode === S.mode); x.setAttribute('aria-pressed', x.dataset.mode === S.mode); });
   document.querySelectorAll('#tabs button, #btabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === S.view || (S.view === 'playlist' && x.dataset.tab === 'library')));
 }
@@ -1009,6 +1046,7 @@ function settingsHTML(){
   const n = Object.keys(S.trims).length;
   return `<h2 style="margin-bottom:14px">Settings</h2>
   ${PHONE ? `<section class="card"><h3>Get your cuts from your laptop</h3><p>${n} song${n === 1 ? ' has' : 's have'} cuts on this phone. On your laptop, open JUMP → Settings → <b style="color:var(--ink)">Send to phone</b>, send yourself the link, and open it here. It replaces the cuts on this phone with your laptop's.</p>
+    <div class="row2"><input id="cutLink" placeholder="Or paste the link here" autocomplete="off"><button class="pri" data-s="pastecuts">Load</button></div>
     <div class="acts"><label class="btn" style="cursor:pointer">Import a backup file<input type="file" id="imp" accept=".json,application/json" hidden></label></div></section>`
   : `<section class="card"><h3>Send to phone</h3><p>${n} song${n === 1 ? ' has' : 's have'} cuts on this device. Make a link that carries all of them, send it to yourself (WhatsApp, Quick Share, email), and open it on your phone. Opening it replaces the phone's cuts with these.</p>
     <div class="acts"><button class="pri" data-s="sendlink">Copy phone link</button>${navigator.share ? '<button class="btn" data-s="sharelink">Share…</button>' : ''}</div>
@@ -1334,6 +1372,9 @@ async function readCutsLink(){
   if (!location.hash.startsWith('#cuts=')) return;
   const raw = decodeURIComponent(location.hash.slice(6));
   history.replaceState(null, '', REDIRECT);
+  await loadCutsFrom(raw);
+}
+async function loadCutsFrom(raw){
   try {
     const d = await unpackCuts(raw);
     if (!d || typeof d.trims !== 'object') throw new Error();
@@ -1342,6 +1383,28 @@ async function readCutsLink(){
     setTimeout(() => toast('Loaded cuts for ' + n + ' song' + (n === 1 ? '' : 's') + ' from your laptop.', 4000), 300);
   } catch { setTimeout(() => toast("That link didn't work. Make a new one on your laptop."), 300); }
 }
+
+/* ---------- events from the JUMP Android app ---------- */
+let natStatus = '', natMsg = '';
+window.JUMP_onNative = ev => {
+  if (!ev) return;
+  if (ev.type === 'msg') return toast(ev.text, 3500);
+  if (ev.status && (ev.status !== natStatus || (ev.msg || '') !== natMsg)) {
+    const was = natStatus; natStatus = ev.status; natMsg = ev.msg || '';
+    if (natStatus === 'connected') { S.dev = 'native'; S.devName = 'This phone'; if (was !== 'connected') { natPushCuts(); natPushSettings(); natPushQueue(); toast('Connected to Spotify on this phone', 2000); } }
+    else if (natStatus === 'error') { S.dev = null; toast(natMsg || "Couldn't connect to the Spotify app.", 6000); }
+    renderTop(); if (S.sheet === 'dev') openDevices(); if (S.view === 'settings') renderMain();
+  }
+  if (ev.type !== 'state') return;
+  if (typeof ev.idx === 'number' && ev.idx >= 0 && ev.idx < S.list.length && ev.idx !== S.idx) {
+    if (ev.idx > S.idx) S.qn = Math.max(0, S.qn - (ev.idx - S.idx));
+    S.idx = ev.idx; saveQLocal(); renderSide(); if (S.view === 'queue') renderMain();
+  }
+  S.external = !!ev.external;
+  const tk = ev.track; if (!tk) return applyState(null);
+  const li = S.list.find(x => x.uri === tk.uri) || {}, tr = S.trims[tk.id] || {};
+  applyState({ id: tk.id, uri: tk.uri, name: tk.name, artists: tk.artists, dur: tk.dur, img: li.img || tr.i || '', imgL: li.imgL || li.img || tr.i || '', pos: ev.pos, playing: !!ev.playing });
+};
 
 /* ---------- phone: full-screen player, swipes, hold and drag ---------- */
 function openFP(){ if (!PHONE) return; $('#fp').hidden = false; renderPlayer(); try { history.pushState({ fp: 1 }, ''); } catch {} }
@@ -1452,6 +1515,7 @@ document.addEventListener('click', e => {
   if (ds.m) return safe(() => menuAct(ds.m));
   if (ds.a) return safe(() => addTo(ds.a));
   if (ds.d === 'openapp') { awaitSpotify = true; return; }
+  if (ds.d === 'reconnect') { closeSheet(); natConnect(); return; }
   if (ds.d) return ds.d === 'refresh' ? listDevices() : safe(() => pickDevice(ds.d));
   if (ds.p) {
     const [k, arg] = ds.p.split(':');
@@ -1463,7 +1527,7 @@ document.addEventListener('click', e => {
     if (k === 'prev') return safe(prev);
     if (k === 'shuf') return setShuffle(!S.shuffle);
     if (k === 'rep') { S.repeat = !S.repeat; saveQ(); renderPlayer(); return toast(S.repeat ? 'The list will start again at the end' : 'Stop at the end of the list', 1800); }
-    if (k === 'full') { S.fullKey = S.fullKey === S.inst ? null : S.inst; renderPlayer(); return toast(S.fullKey ? 'Playing this song in full' : 'Cuts back on for this song', 1800); }
+    if (k === 'full') { S.fullKey = S.fullKey === S.inst ? null : S.inst; if (NATIVE) try { JumpNative.setFull(S.fullKey === S.inst); } catch {} renderPlayer(); return toast(S.fullKey ? 'Playing this song in full' : 'Cuts back on for this song', 1800); }
     if (k === 'zero') return safe(async () => {
       if (S.resumeNeedsReplay && S.list[S.idx]) return playIdx(S.idx, 0);
       await pSeek(0); if (!S.now.playing) await togglePlay();
@@ -1477,6 +1541,14 @@ document.addEventListener('click', e => {
     if (k === 'copyuri') { navigator.clipboard && navigator.clipboard.writeText(REDIRECT).then(() => toast('Copied'), () => toast('Select the address and copy it')); return; }
     if (k === 'fade') { S.set.fade = +arg; saveSet(); return renderMain(); }
     if (k === 'export') return exportData();
+    if (k === 'pastecuts') return safe(async () => {
+      let txt = ($('#cutLink') && $('#cutLink').value || '').trim();
+      if (!txt && NATIVE) { try { txt = JumpNative.clipboard(); } catch {} }
+      if (!txt && navigator.clipboard) { try { txt = await navigator.clipboard.readText(); } catch {} }
+      const m = (txt || '').match(/#cuts=([A-Za-z0-9_\-%]+)/);
+      if (!m) return toast('Copy the phone link from your laptop first, then tap Load.');
+      await loadCutsFrom(decodeURIComponent(m[1])); S.edKey = null; renderPlayer(); renderMain();
+    });
     if (k === 'gh') { LS.set('pc.gh', true); const n = el.closest('.gh'); if (n) n.remove(); return; }
     if (k === 'layout') { try { localStorage.setItem('pc.full', PHONE ? 'true' : 'false'); } catch {} location.reload(); return; }
     if (k === 'sendlink') return safe(async () => { const l = await phoneLink(); try { await navigator.clipboard.writeText(l); toast('Link copied. Paste it to yourself (for example on WhatsApp) and open it on your phone.', 5000); } catch { openSheet(`<div class="sh"><h3>Your phone link</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div><p class="hint">Select all of it, copy it and send it to yourself.</p><textarea readonly style="width:100%;height:140px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px">${esc(l)}</textarea>`, 'link'); } });
@@ -1522,7 +1594,7 @@ document.addEventListener('keydown', e => {
 });
 document.addEventListener('change', e => {
   const s = e.target.dataset && e.target.dataset.s;
-  if (s === 'ignore') { S.set.ignore = e.target.checked; saveSet(); renderPlayer(); }
+  if (s === 'ignore') { S.set.ignore = e.target.checked; saveSet(); natPushSettings(); renderPlayer(); }
   if (s === 'awake') { S.set.awake = e.target.checked; saveSet(); wake(S.now.playing && S.set.awake); }
   if (e.target.id === 'imp' && e.target.files[0]) importData(e.target.files[0]);
 });
@@ -1548,6 +1620,7 @@ async function boot(){
   const dv = LS.get('pc.dev', null);
   if (dv && !dv.sdk) { S.dev = dv.id; S.devName = dv.name; }
   renderMain();
+  if (NATIVE) { natPushCuts(); natPushSettings(); natPushQueue(); natConnect(); }
   loadSDK();
   autoPickDevice();
   loadPlaylists().then(() => { if (S.view === 'library') renderMain(); }).catch(handleErr);
