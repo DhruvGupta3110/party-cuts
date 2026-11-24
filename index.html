@@ -468,7 +468,7 @@ const IC = {
 const S = {
   cid: LS.get('pc.cid', ''), tok: LS.get('pc.tok', null), me: null,
   trims: LS.get('pc.trims', {}),
-  set: Object.assign({ fade: 0, ignore: false, awake: true }, LS.get('pc.set', {})),
+  set: Object.assign({ fade: 0, ignore: false, awake: true, posFix: false }, LS.get('pc.set', {})),
   pls: null, cur: null, sr: [], srQ: '', srOff: 0, view: 'library',
   list: [], orig: [], idx: -1, qn: 0, shuffle: false, repeat: false, src: '',
   dev: null, devName: '', devVolOK: false, devVol: null, devs: [],
@@ -761,7 +761,7 @@ async function playIdx(j, startAt){
   S.selfAt = performance.now(); S.selfT = t; S.holdUntil = S.selfAt + 2500;
   // Learn, per speaker, whether it follows the start position in "play". Only speakers that ignore it
   // get the mute-and-jump treatment; the rest start instantly, like before.
-  const pm = !isSdk() && start > 1500 ? (S.posMode[S.dev] || 'unknown') : 'ok';
+  const pm = S.set.posFix && !isSdk() && start > 1500 ? (S.posMode[S.dev] || 'unknown') : 'ok';
   const fix = pm === 'ignores';
   const muted = fix ? await preMute() : null;
   try { S.idx = j; await pPlay(S.list.slice(j, j + 60).map(x => x.uri), start); }
@@ -772,7 +772,7 @@ async function playIdx(j, startAt){
   Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, imgL: t.imgL, dur: t.dur, pos: start, base: start, at: performance.now(), playing: true });
   S.holdUntil = performance.now() + 2500; lastPoll = performance.now() - 1200;
   // Some Spotify apps ignore the start position in a play request. Check, and seek if they did.
-  S.expect = start > 1500 ? { id: t.id, t, start, tries: 0, until: performance.now() + 9000, mode: pm, dev: S.dev } : null;
+  S.expect = S.set.posFix && start > 1500 ? { id: t.id, t, start, tries: 0, until: performance.now() + 9000, mode: pm, dev: S.dev } : null;
   if (S.expect && !isSdk()) { lastPoll = performance.now() - 1700; }
   if (S.fading) setTimeout(restoreVol, isSdk() ? 150 : 400);
   saveQ(); renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain(); wake(true);
@@ -1066,6 +1066,8 @@ function settingsHTML(){
     <p class="hint">Fading works when music plays in this browser. Most phones don't let other apps change the Spotify app's volume, so on your phone the cut is instant.</p>
     <label class="tog"><input type="checkbox" data-s="ignore" ${S.set.ignore ? 'checked' : ''}> Play every song in full (ignore all cuts)</label>
     <label class="tog"><input type="checkbox" data-s="awake" ${S.set.awake ? 'checked' : ''}> Keep the screen on while music plays</label>
+    ${NATIVE ? '' : `<label class="tog"><input type="checkbox" data-s="posfix" ${S.set.posFix ? 'checked' : ''}> Fix songs that start from 0:00 instead of their start point</label>
+    <p class="hint" style="margin-top:-4px">Only turn this on if it happens. Some Spotify apps ignore the start point; with this on, JUMP jumps there itself (and mutes the intro where the speaker allows it), which makes song changes a little slower.</p>`}
   </section>
   <section class="card"><h3>Party-night checklist</h3><ul>
     <li>Keep this page open and on screen. It's what makes songs start and stop at your points.</li>
@@ -1604,6 +1606,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('change', e => {
   const s = e.target.dataset && e.target.dataset.s;
   if (s === 'ignore') { S.set.ignore = e.target.checked; saveSet(); natPushSettings(); renderPlayer(); }
+  if (s === 'posfix') { S.set.posFix = e.target.checked; saveSet(); S.expect = null; }
   if (s === 'awake') { S.set.awake = e.target.checked; saveSet(); wake(S.now.playing && S.set.awake); }
   if (e.target.id === 'imp' && e.target.files[0]) importData(e.target.files[0]);
 });
