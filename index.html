@@ -479,6 +479,7 @@ const S = {
   mode: !PHONE && LS.get('pc.mode', 'play') === 'edit' ? 'edit' : 'play', edKey: null, drag: null, dragging: false, sheet: null, menu: null
 };
 Object.assign(S, (({list, orig, idx, qn, shuffle, repeat, src}) => ({list: list || [], orig: orig || [], idx: idx ?? -1, qn: qn || 0, shuffle: !!shuffle, repeat: !!repeat, src: src || ''}))(LS.get('pc.q', {})));
+S.posMode = LS.get('pc.posMode', {});
 const saveQLocal = () => LS.set('pc.q', { list: S.list, orig: S.orig, idx: S.idx, qn: S.qn, shuffle: S.shuffle, repeat: S.repeat, src: S.src });
 const saveQ = () => { saveQLocal(); natPushQueue(); };
 const saveTrims = () => { LS.set('pc.trims', S.trims); natPushCuts(); };
@@ -672,6 +673,11 @@ function applyState(st){
   if (st.none) { if (S.now.playing) { S.now.playing = false; renderPlayer(); } return; }
   const ex = S.expect;
   if (ex && t < ex.until && (st.id === ex.id || same(st, ex.t))) {
+    if (ex.dev && ex.mode !== 'ignores' && !ex.learned) {
+      ex.learned = true;
+      const m = st.pos < ex.start - 1500 ? 'ignores' : 'ok';
+      if (S.posMode[ex.dev] !== m) { S.posMode[ex.dev] = m; LS.set('pc.posMode', S.posMode); }
+    }
     if (st.pos < ex.start - 1500) {
       if (!ex.busy && ex.tries < 3) { ex.busy = true; ex.tries++; pSeek(ex.start).catch(() => {}).finally(() => { ex.busy = false; lastPoll = performance.now() - 1500; }); }
       return;
@@ -753,7 +759,10 @@ async function playIdx(j, startAt){
   const start = startAt != null ? startAt : ((!S.set.ignore && tr && tr.s) || 0);
   const prevIdx = S.idx;
   S.selfAt = performance.now(); S.selfT = t; S.holdUntil = S.selfAt + 2500;
-  const fix = !isSdk() && start > 1500;
+  // Learn, per speaker, whether it follows the start position in "play". Only speakers that ignore it
+  // get the mute-and-jump treatment; the rest start instantly, like before.
+  const pm = !isSdk() && start > 1500 ? (S.posMode[S.dev] || 'unknown') : 'ok';
+  const fix = pm === 'ignores';
   const muted = fix ? await preMute() : null;
   try { S.idx = j; await pPlay(S.list.slice(j, j + 60).map(x => x.uri), start); }
   catch (e) { S.idx = prevIdx; if (muted != null) unmute(muted); throw e; }
@@ -763,7 +772,7 @@ async function playIdx(j, startAt){
   Object.assign(S.now, { id: t.id, uri: t.uri, name: t.name, artists: t.artists, img: t.img, imgL: t.imgL, dur: t.dur, pos: start, base: start, at: performance.now(), playing: true });
   S.holdUntil = performance.now() + 2500; lastPoll = performance.now() - 1200;
   // Some Spotify apps ignore the start position in a play request. Check, and seek if they did.
-  S.expect = start > 1500 ? { id: t.id, t, start, tries: 0, until: performance.now() + 9000 } : null;
+  S.expect = start > 1500 ? { id: t.id, t, start, tries: 0, until: performance.now() + 9000, mode: pm, dev: S.dev } : null;
   if (S.expect && !isSdk()) { lastPoll = performance.now() - 1700; }
   if (S.fading) setTimeout(restoreVol, isSdk() ? 150 : 400);
   saveQ(); renderPlayer(); renderSide(); markRows(); if (S.view === 'queue') renderMain(); wake(true);
@@ -792,7 +801,7 @@ async function landAt(start, muted){
     await seekRaw(start);
     if (muted == null) return;
     for (let i = 0; i < 6; i++) {
-      await sleep(300);
+      await sleep(200);
       if (stale()) break;
       const j = await api('/me/player');
       if (j && j.item && (j.progress_ms || 0) >= start - 1500) break;
