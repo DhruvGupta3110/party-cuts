@@ -52,6 +52,15 @@ aside{display:none}
 .row{display:flex;align-items:center;gap:10px;padding:4px 6px;border-radius:10px;cursor:pointer}
 .row:hover{background:var(--panel)}
 .row.on .t{color:var(--acc)}
+.row.sel,.row.sel:hover{background:var(--acc-bg);box-shadow:inset 0 0 0 1px var(--acc-line)}
+#main .row{-webkit-user-select:none;user-select:none}
+.body{position:relative}
+#selbar{position:absolute;z-index:20;bottom:16px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:8px;padding:7px 7px 7px 16px;border-radius:999px;background:#2a2233;border:1px solid #463b55;box-shadow:0 12px 32px #000a;white-space:nowrap;max-width:calc(100% - 24px)}
+#selbar.show{display:flex}
+body.selecting main{padding-bottom:96px}
+#selbar b{font-size:14px;margin-right:4px}
+#selbar .btn,#selbar .pri{min-height:36px;padding:0 14px;font-size:13px}
+@media(min-width:1000px){#selbar{left:calc((100% - 380px) / 2)}}
 .art{width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--panel2);flex:none}
 .meta{flex:1}
 .t{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -363,7 +372,7 @@ body.phone .row.lift .rin{box-shadow:0 8px 24px rgba(0,0,0,.5);background:#221b2
       <button class="devbtn" data-p="dev" id="devbtn"></button>
     </div>
   </header>
-  <div class="body"><main id="main"></main><aside id="side"><div id="qside"></div></aside></div>
+  <div class="body"><main id="main"></main><aside id="side"><div id="qside"></div></aside><div id="selbar" role="toolbar" aria-label="Selected songs"></div></div>
   <footer class="player" id="player">
     <div class="bar" id="pbar"><div class="trk"><div class="fill"></div><div class="cutL"></div><div class="cutR"></div></div><div class="cues"></div></div>
     <div id="editor"><div class="edhead" id="edHead"></div>
@@ -1016,10 +1025,11 @@ function row(t, i, ctx, opts = {}){
     ? `<button class="ib" data-act="up" aria-label="Move up">${IC.up}</button><button class="ib" data-act="down" aria-label="Move down">${IC.down}</button><button class="ib" data-act="rm" aria-label="Remove">${IC.x}</button>`
     : `<button class="ib" data-act="queue" aria-label="Add to queue" title="Add to queue">${IC.addq}</button><button class="ib" data-act="menu" aria-label="More options">${IC.more}</button>`;
   const sw = !PHONE || opts.nobtn ? '' : opts.q ? '<span class="swh l rm">Remove</span>' : '<span class="swh r">＋ Add to queue</span><span class="swh l">Play next ↑</span>';
-  return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}"${opts.nobtn ? ' data-cur="1"' : ''}>${sw}<div class="rin">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div>${rj}${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div></div>`;
+  return `<div class="row${same(S.now, t) && S.now.id ? ' on' : ''}${isSel(ctx, i) ? ' sel' : ''}" data-i="${i}" data-ctx="${ctx}" data-id="${esc(t.id)}"${opts.nobtn ? ' data-cur="1"' : ''}>${sw}<div class="rin">${cover(t)}<div class="meta"><div class="t">${esc(t.name)}</div><div class="a">${esc(t.artists)}</div></div>${rj}${badge}<span class="dur">${fmt(t.dur)}</span>${opts.nobtn ? '' : btns}</div></div>`;
 }
 function markRows(){ document.querySelectorAll('.row').forEach(r => r.classList.toggle('on', !!S.now.id && r.dataset.id === S.now.id)); }
 function renderMain(){
+  checkSel();
   renderTop();
   const m = $('#main');
   if (S.view === 'library') m.innerHTML = libraryHTML();
@@ -1216,26 +1226,91 @@ async function menuAct(a){
     toast('Removed from ' + S.cur.name);
   }
 }
-function openAddTo(t){
-  S.addT = t;
+function openAddTo(t, opt = {}){
+  const list = Array.isArray(t) ? t : [t];
+  S.addT = list; S.addFromSel = !!opt.fromSel;
   const own = (S.pls || []).filter(owned);
-  openSheet(`<div class="sh"><h3>Add “${esc(t.name)}” to…</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+  const title = list.length === 1 ? `Add “${esc(list[0].name)}” to…` : opt.make ? `Make a playlist from ${list.length} songs` : `Add ${list.length} songs to…`;
+  openSheet(`<div class="sh"><h3>${title}</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
     <div class="row2"><input id="npName" placeholder="New playlist name" maxlength="80"><button class="pri" data-a="new">Create</button></div>
+    ${list.length > 1 ? '<p class="hint">Or add them to one of your playlists:</p>' : ''}
     <div class="mlist">${own.map(p => `<button data-a="${esc(p.id)}">${esc(p.name)}</button>`).join('') || '<p class="hint">You have no playlists yet. Create one above.</p>'}</div>`, 'add');
+  if (opt.make) setTimeout(() => { const i = $('#npName'); if (i) i.focus(); }, 50);
 }
 async function addTo(pid){
-  const t = S.addT; if (!t) return;
-  let p = (S.pls || []).find(x => x.id === pid);
+  const list = S.addT; if (!list || !list.length) return;
+  const seen = new Set(), uris = [];
+  for (const t of list) if (t.uri && /^spotify:(track|episode):/.test(t.uri) && !seen.has(t.uri)) { seen.add(t.uri); uris.push(t.uri); }
+  if (!uris.length) return toast('These songs can\'t be added to a playlist (local files).');
+  let p = (S.pls || []).find(x => x.id === pid), made = false;
   if (pid === 'new') {
     const name = ($('#npName').value || '').trim(); if (!name) return toast('Type a name for the new playlist.');
     p = await api('/me/playlists', { method: 'POST', body: { name, public: false, description: 'Made with JUMP' } });
-    S.pls = [p].concat(S.pls || []);
+    S.pls = [p].concat(S.pls || []); made = true;
   }
+  if (!p) return;
   closeSheet();
-  try { await api(`/playlists/${p.id}/items`, { method: 'POST', body: { uris: [t.uri] } }); }
-  catch (e) { if (e.status === 404) await api(`/playlists/${p.id}/tracks`, { method: 'POST', body: { uris: [t.uri] } }); else throw e; }
-  toast('Added to ' + p.name);
-  if (S.cur && S.cur.id === p.id && S.cur.tracks) { S.cur.tracks.push(t); if (S.view === 'playlist') renderMain(); }
+  for (let k = 0; k < uris.length; k += 100) {
+    const chunk = uris.slice(k, k + 100);
+    try { await api(`/playlists/${p.id}/items`, { method: 'POST', body: { uris: chunk } }); }
+    catch (e) { if (e.status === 404) await api(`/playlists/${p.id}/tracks`, { method: 'POST', body: { uris: chunk } }); else throw e; }
+  }
+  const n = uris.length;
+  if (p.items && typeof p.items.total === 'number') p.items.total += n; else if (p.tracks && typeof p.tracks.total === 'number') p.tracks.total += n; else p.tracks = { total: n };
+  const skipped = list.length - n;
+  toast((made ? `Made “${p.name}” with ${n} song${n === 1 ? '' : 's'}` : n === 1 ? 'Added to ' + p.name : `Added ${n} songs to ${p.name}`) + (skipped ? ` (${skipped} duplicate or local skipped)` : ''), 3000);
+  if (S.addFromSel) clearSel();
+  if (S.cur && S.cur.id === p.id && S.cur.tracks) { S.cur.tracks.push(...list.filter(t => uris.includes(t.uri))); if (S.view === 'playlist') renderMain(); }
+  else if (S.view === 'library') renderMain();
+}
+/* ---------- multi-select on the laptop: Shift-click = range, ⌘/Ctrl-click = one song, ⌘A = all ---------- */
+S.sel = null;
+const SELCTX = { pl: 1, sr: 1 };
+const selKey = () => S.view + '|' + (S.view === 'playlist' && S.cur ? (S.cur.id || S.cur.kind) : '') + '|' + (S.view === 'search' ? S.srQ : '');
+const isSel = (ctx, i) => !!(S.sel && S.sel.ctx === ctx && S.sel.set.has(i));
+function checkSel(){ if (S.sel && S.sel.key !== selKey()) clearSel(); }
+function clearSel(){ S.sel = null; drawSel(); }
+function selClick(ctx, i, e){
+  if (!S.sel || S.sel.ctx !== ctx) S.sel = { ctx, key: selKey(), set: new Set(), base: new Set(), anchor: null };
+  const z = S.sel;
+  if (e.shiftKey && z.anchor != null) {
+    const [lo, hi] = z.anchor < i ? [z.anchor, i] : [i, z.anchor];
+    z.set = new Set(z.base); for (let k = lo; k <= hi; k++) z.set.add(k);
+  } else {
+    if (z.set.has(i)) z.set.delete(i); else z.set.add(i);
+    z.anchor = i; z.base = new Set(z.set); if (!z.set.has(i)) z.base.delete(i);
+  }
+  if (!z.set.size) S.sel = null;
+  drawSel();
+}
+function selectAll(){
+  const ctx = S.view === 'playlist' ? 'pl' : S.view === 'search' ? 'sr' : null; if (!ctx) return false;
+  const list = listFor(ctx) || []; if (!list.length) return false;
+  S.sel = { ctx, key: selKey(), set: new Set(list.map((_, k) => k)), base: new Set(), anchor: 0 };
+  S.sel.base = new Set(S.sel.set); drawSel(); return true;
+}
+function selTracks(){
+  if (!S.sel) return [];
+  const list = listFor(S.sel.ctx) || [];
+  return [...S.sel.set].sort((a, b) => a - b).map(k => list[k]).filter(Boolean);
+}
+function drawSel(){
+  document.querySelectorAll('#main .row').forEach(r => r.classList.toggle('sel', isSel(r.dataset.ctx, +r.dataset.i)));
+  const bar = $('#selbar'); if (!bar) return;
+  const n = S.sel ? S.sel.set.size : 0;
+  bar.classList.toggle('show', n > 0); document.body.classList.toggle('selecting', n > 0);
+  bar.innerHTML = n ? `<b>${n} song${n === 1 ? '' : 's'} selected</b><button class="pri" data-sel="make">Make playlist</button><button class="btn" data-sel="add">Add to playlist</button><button class="btn" data-sel="queue">Add to queue</button><button class="ib" data-sel="clear" aria-label="Clear selection" title="Clear (Esc)">${IC.x}</button>` : '';
+}
+function selAct(a){
+  const ts = selTracks();
+  if (a === 'clear' || !ts.length) return clearSel();
+  if (a === 'make' || a === 'add') return openAddTo(ts, { make: a === 'make', fromSel: true });
+  if (a === 'queue') {
+    if (!S.list.length || S.idx < 0) { clearSel(); return safe(() => playFrom(ts, 0, false, 'your selection')); }
+    S.list.splice(S.idx + 1 + S.qn, 0, ...ts); S.qn += ts.length;
+    saveQ(); renderSide(); if (S.view === 'queue') renderMain();
+    clearSel(); return toast(`Added ${ts.length} song${ts.length === 1 ? '' : 's'} to the queue`, 2200);
+  }
 }
 function newPlaylistSheet(){
   openSheet(`<div class="sh"><h3>New playlist</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
@@ -1270,6 +1345,7 @@ function commitEdit(et, d){
   clearTimeout(listT); listT = setTimeout(refreshLists, 350);
 }
 function refreshLists(){
+  checkSel();
   const m = $('#main'), y = m.scrollTop;
   if (S.view === 'search') { const r = m.querySelector('.rows'); if (r) r.innerHTML = S.sr.map((t, i) => row(t, i, 'sr')).join(''); }
   else if (S.view !== 'settings') renderMain();
@@ -1634,10 +1710,11 @@ async function importData(file){
 
 /* ---------- events ---------- */
 document.addEventListener('click', e => {
-  const el = e.target.closest('[data-tab],[data-mode]:not(body),[data-p],[data-l],[data-act],[data-m],[data-d],[data-e],[data-s],[data-a],[data-x],.row');
+  const el = e.target.closest('[data-tab],[data-mode]:not(body),[data-p],[data-l],[data-act],[data-m],[data-d],[data-e],[data-s],[data-a],[data-x],[data-sel],.row');
   if (!el) { if (e.target.id === 'scrim') closeSheet(); return; }
   const ds = el.dataset;
   if (ds.x) return closeSheet();
+  if (ds.sel) return selAct(ds.sel);
   if (ds.tab) return setView(ds.tab);
   if (ds.mode) return setMode(ds.mode);
   if (ds.e) return edAct(ds.e);
@@ -1701,6 +1778,7 @@ document.addEventListener('click', e => {
   }
   const r = el.closest('.row'); if (!r) return;
   const ctx = r.dataset.ctx, i = +r.dataset.i, t = listFor(ctx)[i]; if (!t) return;
+  if (!MOBILE && SELCTX[ctx] && r.closest('#main') && (e.shiftKey || e.metaKey || e.ctrlKey)) { e.preventDefault(); return selClick(ctx, i, e); }
   if (ds.act && ds.act.startsWith('j:')) { const c = (S.trims[t.id] && S.trims[t.id].cues || [])[+ds.act.slice(2)]; if (c) return safe(() => playRow(ctx, i, t, c.t)); return; }
   if (ds.act === 'menu') return openMenu(ctx, i);
   if (ds.act === 'queue') return addQueue(t, false);
@@ -1713,11 +1791,15 @@ document.addEventListener('click', e => {
   if (PHONE) return safe(() => playRow(ctx, i, t));
   return openMenu(ctx, i);
 });
+document.addEventListener('mousedown', e => { if (!MOBILE && (e.shiftKey || e.metaKey) && e.target.closest('#main .row')) e.preventDefault(); });
 document.addEventListener('input', e => { if (e.target.id === 'q') { clearTimeout(srT); srT = setTimeout(() => doSearch(e.target.value), 400); } });
 document.addEventListener('keydown', e => {
   if (e.target.id === 'q' && e.key === 'Enter') { clearTimeout(srT); doSearch(e.target.value); e.target.blur(); }
   if (e.target.id === 'cid' && e.key === 'Enter') login();
   if (e.key === 'Escape' && S.sheet) closeSheet();
+  else if (e.key === 'Escape' && S.sel) clearSel();
+  if (e.target.id === 'npName' && e.key === 'Enter') safe(() => addTo('new'));
+  if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === 'a' && !MOBILE && !S.sheet && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && selectAll()) e.preventDefault();
   if (e.key === ' ' && !/INPUT|TEXTAREA|BUTTON/.test(e.target.tagName) && !S.sheet && S.tok) { e.preventDefault(); safe(togglePlay); }
   if (e.target.id === 'cueName' && e.key === 'Enter') edAct('cadd');
   editKeys(e);
