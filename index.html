@@ -453,7 +453,7 @@ const vib = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch {}
 const API = 'https://api.spotify.com/v1';
 const SCOPES = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-read-currently-playing streaming playlist-read-private playlist-read-collaborative playlist-modify-private playlist-modify-public user-library-read';
 const sv = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
-const PRESETS = ['Beat in', 'Hook', 'Chorus', 'Build-up', 'Drop', 'Feature verse', 'Beat switch', 'Singalong'];
+const PRESETS = ['Beat in', 'Vocal-in', 'Chorus', 'Build-up', 'Drop', 'Feature verse', 'Beat switch', 'Singalong'];
 function uniqueLabel(cues, name){
   const taken = new Set((cues || []).map(c => c.l.toLowerCase()));
   if (!taken.has(name.toLowerCase())) return name;
@@ -496,6 +496,15 @@ Object.assign(S, (({list, orig, idx, qn, shuffle, repeat, src}) => ({list: list 
 S.posMode = LS.get('pc.posMode', {});
 const saveQLocal = () => LS.set('pc.q', { list: S.list, orig: S.orig, idx: S.idx, qn: S.qn, shuffle: S.shuffle, repeat: S.repeat, src: S.src });
 const saveQ = () => { saveQLocal(); natPushQueue(); };
+// Old "Hook" jump points are now called "Vocal-in" (also covers "Hook 2" etc. and cuts sent from an older version).
+function renameOldLabels(trims){
+  let n = 0;
+  for (const d of Object.values(trims || {})) for (const c of (d && d.cues) || []) {
+    const m = /^Hook( \d+)?$/.exec(c.l || ''); if (m) { c.l = 'Vocal-in' + (m[1] || ''); n++; }
+  }
+  return n;
+}
+if (renameOldLabels(S.trims)) LS.set('pc.trims', S.trims);
 const saveTrims = () => { LS.set('pc.trims', S.trims); natPushCuts(); };
 function natPushQueue(){ if (!NATIVE) return; try { JumpNative.setQueue(JSON.stringify({ list: S.list.map(t => ({ id: t.id, uri: t.uri, name: t.name, artists: t.artists, dur: t.dur })), idx: S.idx, repeat: S.repeat })); } catch {} }
 function natPushCuts(){ if (!NATIVE) return; const o = {}; for (const [id, v] of Object.entries(S.trims)) if (v && (v.s || v.e)) o[id] = { s: v.s || 0, e: v.e || 0 }; try { JumpNative.setCuts(JSON.stringify(o)); } catch {} }
@@ -1389,7 +1398,7 @@ function suggestFromLrc(all, dur){
   const lead = 350; // start just before the first word so the line isn't clipped
   const at = ms => Math.max(0, ms - lead);
   const add = (t, l, text) => { if (t < dur - 5000 && !sug.some(g => Math.abs(g.t - t) < 4000)) sug.push({ t, l, text }); };
-  add(at(lines[0].t), 'Vocals in', lines[0].text);
+  add(at(lines[0].t), 'Vocal-in', lines[0].text);
   // Chorus: the block of lines that repeats most. Key each line by itself + the next line.
   const n = lines.map(l => lyrNorm(l.text));
   const key = i => n[i] + '|' + (n[i + 1] ?? '');
@@ -1498,7 +1507,7 @@ async function loadCutsFrom(raw){
   try {
     const d = await unpackCuts(raw);
     if (!d || typeof d.trims !== 'object') throw new Error();
-    S.trims = d.trims; saveTrims();
+    renameOldLabels(d.trims); S.trims = d.trims; saveTrims();
     const n = Object.keys(S.trims).length;
     setTimeout(() => toast('Loaded cuts for ' + n + ' song' + (n === 1 ? '' : 's') + ' from your laptop.', 4000), 300);
   } catch { setTimeout(() => toast("That link didn't work. Make a new one on your laptop."), 300); }
