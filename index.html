@@ -55,7 +55,7 @@ aside{display:none}
 .row.sel,.row.sel:hover{background:var(--acc-bg);box-shadow:inset 0 0 0 1px var(--acc-line)}
 #main .row{-webkit-user-select:none;user-select:none}
 .body{position:relative}
-#selbar{position:absolute;z-index:20;bottom:16px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:8px;padding:7px 7px 7px 16px;border-radius:999px;background:#2a2233;border:1px solid #463b55;box-shadow:0 12px 32px #000a;white-space:nowrap;max-width:calc(100% - 24px)}
+#selbar{position:absolute;z-index:20;bottom:16px;left:50%;transform:translateX(-50%);display:none;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;padding:7px 7px 7px 16px;border-radius:26px;background:#2a2233;border:1px solid #463b55;box-shadow:0 12px 32px #000a;white-space:nowrap;width:max-content;max-width:calc(100% - 24px)}
 #selbar.show{display:flex}
 body.selecting main{padding-bottom:96px}
 #selbar b{font-size:14px;margin-right:4px}
@@ -1198,7 +1198,7 @@ function openMenu(ctx, i){
     <button data-m="queue">Add to queue</button>
     <button data-m="cut">Edit this song (start, end, jump points)</button>
     <button data-m="add">Add to a playlist</button>
-    ${canRm ? '<button data-m="remove">Remove from this playlist</button>' : ''}
+    ${canRm ? '<button data-m="move">Move to another playlist</button><button data-m="remove">Remove from this playlist</button>' : ''}
     ${S.trims[t.id] ? '<button data-m="clear">Delete this song\'s cuts</button>' : ''}
   </div>`, 'menu');
 }
@@ -1217,20 +1217,16 @@ async function menuAct(a){
   if (a === 'queue') return addQueue(t, false);
   if (a === 'cut') { setMode('edit'); if (S.now.id && same(S.now, t)) return; return playRow(ctx, i, t); }
   if (a === 'add') return openAddTo(t);
+  if (a === 'move') return openAddTo(t, { move: true });
   if (a === 'clear') { delete S.trims[t.id]; saveTrims(); S.edKey = null; renderPlayer(); refreshLists(); return toast('Cuts deleted'); }
-  if (a === 'remove') {
-    const pid = S.cur.id;
-    try { await api(`/playlists/${pid}/items`, { method: 'DELETE', body: { items: [{ uri: t.uri }] } }); }
-    catch (e) { if (e.status === 400 || e.status === 404) await api(`/playlists/${pid}/tracks`, { method: 'DELETE', body: { tracks: [{ uri: t.uri }] } }); else throw e; }
-    if (S.cur && S.cur.id === pid) { S.cur.tracks = S.cur.tracks.filter(x => x.uri !== t.uri); renderMain(); }
-    toast('Removed from ' + S.cur.name);
-  }
+  if (a === 'remove') { const name = S.cur.name; await removeFrom(S.cur.id, [t.uri]); toast('Removed from ' + name); }
 }
 function openAddTo(t, opt = {}){
   const list = Array.isArray(t) ? t : [t];
-  S.addT = list; S.addFromSel = !!opt.fromSel;
-  const own = (S.pls || []).filter(owned);
-  const title = list.length === 1 ? `Add “${esc(list[0].name)}” to…` : opt.make ? `Make a playlist from ${list.length} songs` : `Add ${list.length} songs to…`;
+  S.addT = list; S.addFromSel = !!opt.fromSel; S.addMove = opt.move && canEditCur() ? S.cur.id : null;
+  const own = (S.pls || []).filter(owned).filter(p => !S.addMove || p.id !== S.addMove);
+  const what = list.length === 1 ? `“${esc(list[0].name)}”` : `${list.length} songs`;
+  const title = S.addMove ? `Move ${what} to…` : opt.make ? `Make a playlist from ${list.length} songs` : `Add ${what} to…`;
   openSheet(`<div class="sh"><h3>${title}</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
     <div class="row2"><input id="npName" placeholder="New playlist name" maxlength="80"><button class="pri" data-a="new">Create</button></div>
     ${list.length > 1 ? '<p class="hint">Or add them to one of your playlists:</p>' : ''}
@@ -1255,13 +1251,26 @@ async function addTo(pid){
     try { await api(`/playlists/${p.id}/items`, { method: 'POST', body: { uris: chunk } }); }
     catch (e) { if (e.status === 404) await api(`/playlists/${p.id}/tracks`, { method: 'POST', body: { uris: chunk } }); else throw e; }
   }
-  const n = uris.length;
+  const n = uris.length, from = S.addMove;
+  if (from) await removeFrom(from, uris);
   if (p.items && typeof p.items.total === 'number') p.items.total += n; else if (p.tracks && typeof p.tracks.total === 'number') p.tracks.total += n; else p.tracks = { total: n };
   const skipped = list.length - n;
-  toast((made ? `Made “${p.name}” with ${n} song${n === 1 ? '' : 's'}` : n === 1 ? 'Added to ' + p.name : `Added ${n} songs to ${p.name}`) + (skipped ? ` (${skipped} duplicate or local skipped)` : ''), 3000);
+  toast((from ? `Moved ${n === 1 ? '“' + list[0].name + '”' : n + ' songs'} to ${p.name}` : made ? `Made “${p.name}” with ${n} song${n === 1 ? '' : 's'}` : n === 1 ? 'Added to ' + p.name : `Added ${n} songs to ${p.name}`) + (skipped ? ` (${skipped} duplicate or local skipped)` : ''), 3000);
   if (S.addFromSel) clearSel();
   if (S.cur && S.cur.id === p.id && S.cur.tracks) { S.cur.tracks.push(...list.filter(t => uris.includes(t.uri))); if (S.view === 'playlist') renderMain(); }
   else if (S.view === 'library') renderMain();
+}
+const canEditCur = () => !!(S.view === 'playlist' && S.cur && S.cur.kind === 'pl' && S.cur.own);
+async function removeFrom(pid, uris){
+  uris = [...new Set(uris)];
+  for (let k = 0; k < uris.length; k += 100) {
+    const chunk = uris.slice(k, k + 100);
+    try { await api(`/playlists/${pid}/items`, { method: 'DELETE', body: { items: chunk.map(uri => ({ uri })) } }); }
+    catch (e) { if (e.status === 400 || e.status === 404) await api(`/playlists/${pid}/tracks`, { method: 'DELETE', body: { tracks: chunk.map(uri => ({ uri })) } }); else throw e; }
+  }
+  const gone = new Set(uris), pl = (S.pls || []).find(x => x.id === pid);
+  if (pl) { if (pl.items && typeof pl.items.total === 'number') pl.items.total = Math.max(0, pl.items.total - uris.length); else if (pl.tracks && typeof pl.tracks.total === 'number') pl.tracks.total = Math.max(0, pl.tracks.total - uris.length); }
+  if (S.cur && S.cur.id === pid && S.cur.tracks) { S.cur.tracks = S.cur.tracks.filter(x => !gone.has(x.uri)); S.sel = null; if (S.view === 'playlist') renderMain(); drawSel(); }
 }
 /* ---------- multi-select on the laptop: Shift-click = range, ⌘/Ctrl-click = one song, ⌘A = all ---------- */
 S.sel = null;
@@ -1299,12 +1308,24 @@ function drawSel(){
   const bar = $('#selbar'); if (!bar) return;
   const n = S.sel ? S.sel.set.size : 0;
   bar.classList.toggle('show', n > 0); document.body.classList.toggle('selecting', n > 0);
-  bar.innerHTML = n ? `<b>${n} song${n === 1 ? '' : 's'} selected</b><button class="pri" data-sel="make">Make playlist</button><button class="btn" data-sel="add">Add to playlist</button><button class="btn" data-sel="queue">Add to queue</button><button class="ib" data-sel="clear" aria-label="Clear selection" title="Clear (Esc)">${IC.x}</button>` : '';
+  bar.innerHTML = n ? `<b>${n} song${n === 1 ? '' : 's'} selected</b><button class="pri" data-sel="make">Make playlist</button><button class="btn" data-sel="add">Add to playlist</button>${S.sel.ctx === 'pl' && canEditCur() ? '<button class="btn" data-sel="move">Move to playlist</button><button class="btn" data-sel="rm">Remove</button>' : ''}<button class="btn" data-sel="queue">Add to queue</button><button class="ib" data-sel="clear" aria-label="Clear selection" title="Clear (Esc)">${IC.x}</button>` : '';
 }
 function selAct(a){
   const ts = selTracks();
   if (a === 'clear' || !ts.length) return clearSel();
   if (a === 'make' || a === 'add') return openAddTo(ts, { make: a === 'make', fromSel: true });
+  if (a === 'move') return openAddTo(ts, { move: true, fromSel: true });
+  if (a === 'rm') {
+    if (!canEditCur()) return;
+    const n = ts.length;
+    return openSheet(`<div class="sh"><h3>Remove ${n === 1 ? '“' + esc(ts[0].name) + '”' : n + ' songs'} from ${esc(S.cur.name)}?</h3><button class="ib" data-x="1" aria-label="Close">${IC.x}</button></div>
+      <p class="hint">They're removed from this Spotify playlist. Their cuts stay saved in JUMP.</p>
+      <div class="row2"><button class="btn" data-x="1">Cancel</button><button class="pri" data-sel="rmok">Remove</button></div>`, 'rm');
+  }
+  if (a === 'rmok') {
+    closeSheet(); const name = S.cur.name, n = ts.length;
+    return safe(async () => { await removeFrom(S.cur.id, ts.map(t => t.uri)); clearSel(); toast(`Removed ${n === 1 ? '“' + ts[0].name + '”' : n + ' songs'} from ${name}`, 2500); });
+  }
   if (a === 'queue') {
     if (!S.list.length || S.idx < 0) { clearSel(); return safe(() => playFrom(ts, 0, false, 'your selection')); }
     S.list.splice(S.idx + 1 + S.qn, 0, ...ts); S.qn += ts.length;
